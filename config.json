@@ -1,16 +1,17 @@
 {
-  "prefix":"!",
-  "statuses":[
-    "discord.gg/reefbot","discord.gg/reefbot","discord.gg/reefbot"
+  "prefix": "!",
+  "statuses": [
+    "discord.gg/cybork",
+    "Cybork | !help",
+    "Serving communities"
   ],
-  "db": "MONGO",
-  "logs":"1010562047643222026",
+  "db": "PG",
+  "logs": "1010562047643222026",
   "embedColor": "#2F3136",
-  "links":{
-   "bg": "",
-   "dc":"https://discord.gg/reefbot"
+  "links": {
+    "bg": "",
+    "dc": "https://discord.gg/cybork"
   },
-   
   "owner": [""],
   "noprefix": [""],
   "Webhooks": {
@@ -21,4 +22,3 @@
     "server_remove": "WEBHOOK"
   }
 }
-  

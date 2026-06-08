@@ -1,19 +1,20 @@
 const { ActivityType } = require("discord.js");
 
 module.exports.run = async (client) => {
-  client.logger.log(`${client.user.username} is ready with ${client.guilds.cache.size} server(s)`);
+  client.logger.banner();
+  client.logger.log(`${client.user.tag} online · ${client.guilds.cache.size} servers · ${client.ws.ping}ms`, "ready");
 
   const ownerIds = client.config.owner || [];
-  const stored = await client.db.get('noprefix_users') || [];
-  const merged = [...new Set([...ownerIds, ...stored])];
+  const stored   = await client.db.get('noprefix_users') || [];
+  const merged   = [...new Set([...ownerIds, ...stored])];
   client.noprefix = merged;
-  client.logger.log(`[NoPrefix] Loaded ${merged.length} user(s) with no-prefix access`);
+  client.logger.log(`NoPrefix loaded for ${merged.length} user(s)`);
+
+  const statuses = client.config.statuses?.length ? client.config.statuses : ['discord.gg/cybork'];
+  client.user.setActivity(statuses[0], { type: ActivityType.Watching });
 
   setInterval(() => {
-    const statuses = client.config.statuses || ['discord.gg/reefbot'];
     const status = statuses[Math.floor(Math.random() * statuses.length)];
-    client.user.setActivity(status, { type: ActivityType.Listening });
+    client.user.setActivity(status, { type: ActivityType.Watching });
   }, 60000);
-
-  client.user.setActivity(client.config.statuses?.[0] || 'discord.gg/reefbot', { type: ActivityType.Listening });
 };

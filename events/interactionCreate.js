@@ -19,12 +19,12 @@ module.exports.run = async (client, interaction, args) => {
      .addComponents(new ButtonBuilder()
      .setLabel("Premium")
      .setStyle("Link")
-     .setURL("https://discord.gg/reefbot"),
+     .setURL(client.config.links.dc),
      new ButtonBuilder()
      .setLabel("Vote")
      .setStyle("Link")
-     .setEmoji("985926662552178748")
-     .setURL(`https://top.gg/${client.user.id}`));
+     .setEmoji("<:vote:985926662552178748>")
+     .setURL(`https://top.gg/bot/${client.user.id}/vote`));
         
      music.setColor(interaction.guild.members.me.displayHexColor !== '#000000' ? interaction.guild.members.me.displayHexColor : client.config.embedColor)
 

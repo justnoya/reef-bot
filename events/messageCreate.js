@@ -18,12 +18,12 @@ const premrow = new ActionRowBuilder()
 .addComponents(new ButtonBuilder()
 .setLabel("Premium")
 .setStyle("Link")
-.setURL("https://discord.gg/reefbot"),
+.setURL(client.config.links.dc),
 new ButtonBuilder()
 .setLabel("Vote")
 .setStyle("Link")
 .setEmoji("<:vote:985926662552178748>")
-.setURL(`https://top.gg/${client.user.id}`));
+.setURL(`https://top.gg/bot/${client.user.id}`));
    
 
    
@@ -38,7 +38,6 @@ new ButtonBuilder()
 
 //server premium scopes ^^
   let scot = 0;
-  let sLink = "https://discord.gg/reefbot";
   if(upremend && Date.now() >= upremend) 
   {
     let upremcount = await client.db.get(`upremcount_${message.author.id}`) ? await client.db.get(`upremcount_${message.author.id}`) : 0;
@@ -59,7 +58,7 @@ new ButtonBuilder()
       }
     }
    await client.db.delete(`upremserver_${message.author.id}`)
-    message.author.send({embeds: [new EmbedBuilder().setColor(message.guild.members.me.displayHexColor !== '#000000' ? message.guild.members.me.displayHexColor : client.config.embedColor).setDescription(`Your Premium Has Got Expired.\nTotal **\`${scot}\`** Servers [Premium](https://discord.gg/wrCzESkVzK) was removed.\nClick [here](https://discord.gg/wrCzESkVzK) To Buy [Premium](https://discord.gg/wrCzESkVzK).`)], components: [premrow]}).catch((err) => { });
+    message.author.send({embeds: [new EmbedBuilder().setColor(message.guild.members.me.displayHexColor !== '#000000' ? message.guild.members.me.displayHexColor : client.config.embedColor).setDescription(`Your Premium Has Got Expired.\nTotal **\`${scot}\`** Servers [Premium](${client.config.links.dc}) was removed.\nClick [here](${client.config.links.dc}) To Buy [Premium](${client.config.links.dc}).`)], components: [premrow]}).catch((err) => { });
   }
 
   if(spremend && Date.now() >= spremend)
@@ -89,14 +88,14 @@ new ButtonBuilder()
         await client.db.delete(`spremown_${upremserver[i]}`)
       }
     try{
-    await client.users.cache.get(`${us}`).send({embeds: [new EmbedBuilder().setColor(message.guild.members.me.displayHexColor !== '#000000' ? message.guild.members.me.displayHexColor : client.config.embedColor).setDescription(`Your Premium Has Got Expired.\nTotal **\`${scount}\`** Servers [Premium](https://discord.gg/wrCzESkVzK) was removed.\nClick [here](https://discord.gg/wrCzESkVzK) To Buy [Premium](https://discord.gg/wrCzESkVzK).`)], components: [premrow]}).catch((er) => { })
+    await client.users.cache.get(`${us}`).send({embeds: [new EmbedBuilder().setColor(message.guild.members.me.displayHexColor !== '#000000' ? message.guild.members.me.displayHexColor : client.config.embedColor).setDescription(`Your Premium Has Got Expired.\nTotal **\`${scount}\`** Servers [Premium](${client.config.links.dc}) was removed.\nClick [here](${client.config.links.dc}) To Buy [Premium](${client.config.links.dc}).`)], components: [premrow]}).catch((er) => { })
     }catch(errors) {
       
     }
     }
     await client.db.delete(`upremserver_${us}`)
     await client.db.delete(`spremown_${message.guild.id}`)
-    message.channel.send({embeds: [new EmbedBuilder().setColor(message.guild.members.me.displayHexColor !== '#000000' ? message.guild.members.me.displayHexColor : client.config.embedColor).setDescription(`The Premium Of This Server Has Got Expired.\nClick [here](https://discord.gg/wrCzESkVzK) To Buy [Premium](https://discord.gg/wrCzESkVzK).`)], components: [premrow]}).catch((err) => { });
+    message.channel.send({embeds: [new EmbedBuilder().setColor(message.guild.members.me.displayHexColor !== '#000000' ? message.guild.members.me.displayHexColor : client.config.embedColor).setDescription(`The Premium Of This Server Has Got Expired.\nClick [here](${client.config.links.dc}) To Buy [Premium](${client.config.links.dc}).`)], components: [premrow]}).catch((err) => { });
   
   }
   const em = new EmbedBuilder();
@@ -124,11 +123,11 @@ var m = "";
     new ButtonBuilder()
     .setLabel("Support Server")
     .setStyle("Link")
-    .setURL("https://discord.gg/wrCzESkVzK"),
+    .setURL(client.config.links.dc),
     new ButtonBuilder()
     .setLabel("Vote Me")
     .setStyle("Link")
-    .setURL("https://top.gg/")
+    .setURL(`https://top.gg/bot/${client.user.id}/vote`)
                         );
       const embed = new EmbedBuilder()
         .setColor(message.guild.members.me.displayHexColor !== '#000000' ? message.guild.members.me.displayHexColor : client.config.embedColor)
@@ -221,18 +220,18 @@ var m = "";
    {
      let voted = await client.topgg.hasVoted(message.author.id);
     if(!client.config.owner.includes(message.author.id)  && !voted && !uprem && !sprem){
-    const row = new MessageActionRow()
+    const row = new ActionRowBuilder()
     .addComponents(new ButtonBuilder()
     .setLabel("Premium")
     .setStyle("Link")
-    .setURL("https://discord.gg/wrCzESkVzK"),
+    .setURL(client.config.links.dc),
     new ButtonBuilder()
     .setLabel("Vote")
     .setStyle("Link")
     .setEmoji("<:vote:985926662552178748>")
     .setURL(`https://top.gg/bot/${client.user.id}/vote`)
                         );
-      embed.setDescription(`You must [vote](https://top.gg/bot/${client.user.id}/vote) me to use this command. If you want to disable this then [click here](https://discord.gg/wrCzESkVzK) to buy [premium](https://discord.gg/wrCzESkVzK) to listen interruption free **music**!`)
+      embed.setDescription(`You must [vote](https://top.gg/bot/${client.user.id}/vote) me to use this command. If you want to disable this then [click here](${client.config.links.dc}) to buy [premium](${client.config.links.dc}) to listen interruption free **music**!`)
       .setColor(message.guild.members.me.displayHexColor !== '#000000' ? message.guild.members.me.displayHexColor : client.config.embedColor)
     return message.channel.send({embeds: [embed], components: [row]})
     }
