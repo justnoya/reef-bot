@@ -1,4 +1,5 @@
 const { EmbedBuilder, ButtonBuilder, ActionRowBuilder, Collection, PermissionsBitField, PermissionFlagsBits } = require('discord.js');
+const { Container, IS_COMPONENTS_V2, TextDisplay, Separator } = require('../V2components');
 
 
 
@@ -30,97 +31,78 @@ module.exports.run = async (client, interaction, args) => {
 
     if(interaction.isSelectMenu())
     {
-      let options = interaction.values;
-      const funny = options[0];
-          let _commands;
-          const embed = new EmbedBuilder()
-          .setAuthor({name: client.user.username, iconURL: client.user.displayAvatarURL()})
-          .setColor(interaction.guild.members.me.displayHexColor !== '#000000' ? interaction.guild.members.me.displayHexColor : client.config.embedColor)
+      const funny  = interaction.values[0];
+      const accent = interaction.guild.members.me.displayHexColor !== '#000000'
+        ? interaction.guild.members.me.displayHexColor
+        : client.config.embedColor;
 
-          if (funny === 'mod') {
-            _commands = client.commands.filter((x) => x.category && x.category === "mod").map((x) => `\`${x.name}\``);
-            embed.addFields({name: ` <:40:1052589138819436624> **Moderation \`[${_commands.length}]\`**`,value: _commands.sort().join(", ")})
-            interaction.update({
-              embeds: [embed],
-              ephemeral: true
-            }).catch((_) => { })
-            return
-          }
-          if (funny === 'utility') {
-            _commands = client.commands.filter((x) => x.category && x.category === "utility").map((x) => `\`${x.name}\``);
-            embed.addFields({name: ` <:3_:1052589023794823249> **Utility \`[${_commands.length}]\`**`,value: _commands.sort().join(", ")})
-            interaction.update({
-              embeds: [embed],
-              ephemeral: true
-            }).catch((_) => { })
-            return
-          }
-        if (funny === 'settings') {
-            _commands = client.commands.filter((x) => x.category && x.category === "settings").map((x) => `\`${x.name}\``);
-            embed.addFields({name: ` <:10:1052589041717092412> **Settings \`[${_commands.length}]\`**`,value: _commands.sort().join(", ")})
-            interaction.update({
-              embeds: [embed],
-              ephemeral: true
-            }).catch((_) => { })
-            return
-          }
-          if (funny === 'info') {
-            _commands = client.commands.filter((x) => x.category && x.category === "info").map((x) => `\`${x.name}\``);
-            embed.addFields({name: ` <:27:1052589100458315776> **Information \`[${_commands.length}]\`**`,value: _commands.sort().join(", ")})
-            interaction.update({
-              embeds: [embed],
-              ephemeral: true
-            }).catch((_) => { })
-            return
-          }
-          if (funny === 'welcome') {
-            _commands = client.commands.filter((x) => x.category && x.category === "welcome").map((x) => `\`${x.name}\``);
-            embed.addFields({name: ` <a:welcome:1054639371657162812> **Welcome \`[${_commands.length}]\`**`,value: _commands.sort().join(", ")})
-            interaction.update({
-              embeds: [embed],
-              ephemeral: true
-            }).catch((_) => { })
-            return
-          }
-       
-        if (funny === 'economy') {
-            _commands = client.commands.filter((x) => x.category && x.category === "economy").map((x) => `\`${x.name}\``);
-            embed.addFields({name: ` <a:bitcoin:1055862360713220237> **Economy \`[${_commands.length}]\`**`,value: _commands.sort().join(", ")})
-            interaction.update({
-              embeds: [embed],
-              ephemeral: true
-            }).catch((_) => { })
-            return
-          }
-          if (funny === 'home') {
-            const ehome = new EmbedBuilder()
-            .setAuthor({name:`${client.user.username}'s Panel`, iconURL: client.user.displayAvatarURL()})
-            .setDescription(`<:46:1052589156787814481> **General Help**
-             My prefix here is: ${prefix}
-             Use select menu for commands.
-             For further help [click here](${client.config.links.dc}).      
-             <:module:1054660233710022728> **Modules**
-             <a:dot:1052593815900409956> Moderation
-             <a:dot:1052593815900409956> Utility
-             <a:dot:1052593815900409956> Welcomer
-             <a:dot:1052593815900409956> Settings
-             <a:dot:1052593815900409956> Information
-    
-             <:27:1052589100458315776> **Quick Links**
-             [Get ${client.user.username}](https://discord.com/oauth2/authorize?client_id=${client.user.id}&permissions=8&scope=applications.commands%20bot)| [Support HQ](${client.config.links.dc})
-            `)
-            
-    
-            .setFooter({text: `Type ${prefix}help <command name> for more information  on a command!`})
-            
-            .setColor(interaction.guild.members.me.displayHexColor !== '#000000' ? interaction.guild.members.me.displayHexColor : client.config.embedColor);
-            interaction.update({
-              embeds: [ehome],
-              ephemeral: true
-            }).catch((_) => { })
-            return
-          }
+      const CATEGORY_MAP = {
+        mod:         { emoji: '<:40:1052589138819436624>',       label: 'Moderation'      },
+        automod:     { emoji: '<:4_:1052589026294632448>',       label: 'Automod'         },
+        utility:     { emoji: '<:3_:1052589023794823249>',       label: 'Utility'         },
+        settings:    { emoji: '<:10:1052589041717092412>',       label: 'Settings'        },
+        info:        { emoji: '<:27:1052589100458315776>',       label: 'Information'     },
+        welcome:     { emoji: '<a:welcome:1054639371657162812>', label: 'Welcomer'        },
+        vmod:        { emoji: '<:50:1056096392860422236>',       label: 'Voice Moderation'},
+        customroles: { emoji: '<:52:1056096390079598673>',       label: 'Custom Roles'    },
+        economy:     { emoji: '<a:bitcoin:1055862360713220237>', label: 'Economy'         },
+      };
 
+      if (funny === 'home') {
+        const inviteURL  = `https://discord.com/oauth2/authorize?client_id=${client.user.id}&permissions=8&scope=applications.commands%20bot`;
+        const supportURL = client.config.links.dc;
+        const container  = new Container()
+          .setAccentColor(accent)
+          .addComponents(
+            new TextDisplay(`## <:46:1052589156787814481>  ${client.user.username} — Home`),
+            new Separator().setDivider(true).setSpacing('Small'),
+            new TextDisplay(
+              `**General Help**\n` +
+              `My prefix here is: \`${prefix}\`\n` +
+              `Use the select menu to browse commands.\n` +
+              `For further help [click here](${supportURL}).`
+            ),
+            new Separator().setDivider(true).setSpacing('Small'),
+            new TextDisplay(
+              `**Modules**\n` +
+              `Moderation · Automod · Utility · Settings\n` +
+              `Information · Welcomer · Voice Moderation · Custom Roles · Economy`
+            ),
+            new Separator().setDivider(true).setSpacing('Small'),
+            new TextDisplay(
+              `**Quick Links**\n` +
+              `[Invite ${client.user.username}](${inviteURL})  ·  [Support Server](${supportURL})`
+            ),
+            new Separator().setSpacing('Small'),
+            new TextDisplay(`-# Type \`${prefix}help <command>\` for detailed info on any command.`)
+          );
+        return interaction.update({
+          components: [container.toJSON()],
+          flags: IS_COMPONENTS_V2,
+        }).catch(() => {});
+      }
+
+      if (CATEGORY_MAP[funny]) {
+        const { emoji, label } = CATEGORY_MAP[funny];
+        const cmds = client.commands
+          .filter(x => x.category && x.category === funny)
+          .map(x => `\`${x.name}\``)
+          .sort();
+
+        const container = new Container()
+          .setAccentColor(accent)
+          .addComponents(
+            new TextDisplay(`## ${emoji}  ${label}  \`[${cmds.length}]\``),
+            new Separator().setDivider(true).setSpacing('Small'),
+            new TextDisplay(cmds.length ? cmds.join('  ') : '*No commands in this category yet.*'),
+            new Separator().setSpacing('Small'),
+            new TextDisplay(`-# Type \`${prefix}help <command>\` for detailed info on any command.`)
+          );
+        return interaction.update({
+          components: [container.toJSON()],
+          flags: IS_COMPONENTS_V2,
+        }).catch(() => {});
+      }
 
     }
 if (interaction.isCommand()) {
