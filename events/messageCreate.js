@@ -5,7 +5,7 @@ const Guild = require("../Models/Guild")
 const ms = require('ms');
 
 const Topgg = require("@top-gg/sdk");
-const topgg = new Topgg.Api("API");
+const topgg = new Topgg.Api(process.env.TOPGG_API || 'API');
 
 const { msg } = require(`${process.cwd()}/util/onCoolDown.js`);
 
@@ -129,7 +129,7 @@ var m = "";
     .setLabel("Vote Me")
     .setStyle("Link")
     .setURL("https://top.gg/")
-			);
+                        );
       const embed = new EmbedBuilder()
         .setColor(message.guild.members.me.displayHexColor !== '#000000' ? message.guild.members.me.displayHexColor : client.config.embedColor)
         .setAuthor({name:'Settings For This Server',iconURL:client.user.displayAvatarURL() })
@@ -231,7 +231,7 @@ var m = "";
     .setStyle("Link")
     .setEmoji("<:vote:985926662552178748>")
     .setURL(`https://top.gg/bot/${client.user.id}/vote`)
-			);
+                        );
       embed.setDescription(`You must [vote](https://top.gg/bot/${client.user.id}/vote) me to use this command. If you want to disable this then [click here](https://discord.gg/wrCzESkVzK) to buy [premium](https://discord.gg/wrCzESkVzK) to listen interruption free **music**!`)
       .setColor(message.guild.members.me.displayHexColor !== '#000000' ? message.guild.members.me.displayHexColor : client.config.embedColor)
     return message.channel.send({embeds: [embed], components: [row]})

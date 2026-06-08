@@ -1,59 +1,52 @@
+const { EmbedBuilder } = require("discord.js");
+const { PgCurrencySystem } = require("../../util/db");
+const cs = new PgCurrencySystem();
 
-const { EmbedBuilder, PermissionsBitField, ApplicationCommandOptionType } = require("discord.js");
-const CurrencySystem = require("currency-system");
-const cs = new CurrencySystem;
 module.exports = {
   name: "banknote",
-  description: "A Way to increase Your Bank Space",
-  usage: 'banknote <no of banknotes to use>',
+  description: "Use banknotes to increase your bank space",
+  usage: "banknote [amount]",
   category: 'economy',
-  aliases: ['banknote'],
+  aliases: ['usenote'],
   cooldown: 5,
 
-
   run: async (client, message, args, prefix) => {
-    const errus = new EmbedBuilder()
-      .setColor(message.guild.members.me.displayHexColor !== '#000000' ? message.guild.members.me.displayHexColor : client.config.embedColor)
-      .setTitle(`An Error Occurred!`)
+    const color = message.guild.members.me.displayHexColor !== '#000000'
+      ? message.guild.members.me.displayHexColor : client.config.embedColor;
 
-    const arr = await cs.getUserItems({
-      user: message.author,
-      guild: { id: null },
-    });
-    if (!arr.inventory.length)
-      return message.reply({ embeds: [errus.setDescription(`<:11:1052589045374533653> You Dont\'t Have Any Banknotes!\n Please Buy Some From Shop.`)] });
-    for (i in arr.inventory) {
-      if (arr.inventory[i].name.toLowerCase().includes("bank note")) {
-        i++;
-        const removeItem = await cs.removeUserItem({
-          user: message.author,
-          item: i,
-          guild: { id: null },
-          amount: parseInt(args[0]) || 1,
-        });
-        if (removeItem.error) {
-          console.log("Bot tried to remove item number " + i);
-          return message.reply({ embeds: [errus.setDescription(`<:11:1052589045374533653> Unknown Error Occurred Please Send A Screenshot of this message to Support Server`)] });
-        }
-        const ToincreasedAmount = 5000 + removeItem.rawData.bankSpace;
-        const result = await cs.setBankSpace(
-          message.author.id,
-          null,
-          ToincreasedAmount
-        );
+    const errus = new EmbedBuilder().setColor(color).setTitle('An Error Occurred!');
 
-        if (!result.error) {
-          const ems = new EmbedBuilder()
-            .setColor(message.guild.members.me.displayHexColor !== '#000000' ? message.guild.members.me.displayHexColor : client.config.embedColor)
-
-            .setDescription(`<:10:1052589041717092412> Successfully Updated The Bank Space
-            <:ecobank:1055873821590175784> Current bank Space: ${result.amount}`)
-          return message.reply({ embeds: [ems] });
-        } else return message.reply({ embeds: [errus.setDescription(`<:11:1052589045374533653> ${result.error}`)] });
-      } else return message.reply({ embeds: [errus.setDescription(`<:11:1052589045374533653> You Dont\'t Have Any Banknotes!\n Please Buy Some From Shop.`)] });
+    const arr = await cs.getUserItems({ user: message.author, guild: { id: null } });
+    if (!arr.inventory.length) {
+      return message.reply({ embeds: [errus.setDescription("<:11:1052589045374533653> You don't have any Banknotes! Please buy some from the shop.")] });
     }
 
+    const noteIndex = arr.inventory.findIndex(i => i.name.toLowerCase().includes('bank note'));
+    if (noteIndex === -1) {
+      return message.reply({ embeds: [errus.setDescription("<:11:1052589045374533653> You don't have any Banknotes! Please buy some from the shop.")] });
+    }
 
+    const useAmount = parseInt(args[0]) || 1;
+    const removeItem = await cs.removeUserItem({
+      user: message.author,
+      item: noteIndex + 1,
+      guild: { id: null },
+      amount: useAmount
+    });
 
+    if (removeItem.error) {
+      return message.reply({ embeds: [errus.setDescription("<:11:1052589045374533653> Unknown error occurred. Please contact support.")] });
+    }
+
+    const newSpace = 5000 * useAmount + removeItem.rawData.bankSpace;
+    const result = await cs.setBankSpace(message.author.id, null, newSpace);
+
+    if (!result.error) {
+      return message.reply({
+        embeds: [new EmbedBuilder().setColor(color)
+          .setDescription(`<:10:1052589041717092412> Successfully updated bank space!\n<:ecobank:1055873821590175784> Current bank space: **${result.amount}**`)]
+      });
+    }
+    return message.reply({ embeds: [errus.setDescription(`<:11:1052589045374533653> ${result.error}`)] });
   }
-}
+};

@@ -1,8 +1,4 @@
-const { EmbedBuilder, PermissionsBitField, ApplicationCommandOptionType } = require("discord.js");
-
-const CurrencySystem = require("currency-system");
-
-const cs = new CurrencySystem;
+const { EmbedBuilder } = require("discord.js");
 
 module.exports = {
 

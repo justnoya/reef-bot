@@ -1,49 +1,36 @@
+const { EmbedBuilder } = require("discord.js");
+const { PgCurrencySystem } = require("../../util/db");
+const cs = new PgCurrencySystem();
 
-const { EmbedBuilder, PermissionsBitField, ApplicationCommandOptionType } = require("discord.js");
-const CurrencySystem = require("currency-system");
-const cs = new CurrencySystem;
 module.exports = {
-    name: "beg",
-    description: "A way to earn money!",
-  category:'economy',
-    aliases:['beg'],
+  name: "beg",
+  description: "Beg to earn some money!",
+  category: 'economy',
+  aliases: ['beg'],
   cooldown: 5,
 
-   
-    run: async (client, message, args, prefix) => {
-        
-        const user = message.author;
-      
-     let result = await cs.beg({
-        user: user,
-        guild: {id: null},
-        minAmount: 20,
-        maxAmount: 100,
-        cooldown: 100 // 60 seconds
+  run: async (client, message, args, prefix) => {
+    const color = message.guild.members.me.displayHexColor !== '#000000'
+      ? message.guild.members.me.displayHexColor : client.config.embedColor;
 
+    const result = await cs.beg({
+      user: message.author,
+      guild: { id: null },
+      minAmount: 20,
+      maxAmount: 100,
+      cooldown: 100
     });
-        if(result.error){
-             const ems = new EmbedBuilder()
 
-        .setColor(message.guild.members.me.displayHexColor !== '#000000' ? message.guild.members.me.displayHexColor : '#2F3136')
-
-        
-
-        .setDescription(`
-
-        You have begged recently Try again in ${result.time}`)
-
-      return message.reply({embeds: [ems]});
-   }   else {
-        const beg = new EmbedBuilder()
-
-        .setColor(message.guild.members.me.displayHexColor !== '#000000' ? message.guild.members.me.displayHexColor : '#2F3136')
-
-        .setDescription(`
-
-        You have earned $${result.amount}.`)
-     
-return message.reply({embeds: [beg]})
-}
+    if (result.error) {
+      return message.reply({
+        embeds: [new EmbedBuilder().setColor(color)
+          .setDescription(`You have begged recently. Try again in **${result.time}**`)]
+      });
     }
+
+    return message.reply({
+      embeds: [new EmbedBuilder().setColor(color)
+        .setDescription(`You have earned <a:bitcoin:1055862360713220237> **${result.amount}** coins.`)]
+    });
   }
+};

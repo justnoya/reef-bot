@@ -1,98 +1,42 @@
+const { EmbedBuilder } = require("discord.js");
+const { PgCurrencySystem } = require("../../util/db");
+const cs = new PgCurrencySystem();
 
-const { EmbedBuilder, PermissionsBitField, ApplicationCommandOptionType } = require("discord.js");
-const CurrencySystem = require("currency-system");
-const cs = new CurrencySystem;
 module.exports = {
-    name: "rob",
-    description: "A way to earn money!",
-  category:'economy',
-    aliases:['steal'],
+  name: "rob",
+  description: "Rob another user's wallet!",
+  category: 'economy',
+  aliases: ['steal'],
   cooldown: 5,
 
-   
-    run: async (client, message, args, prefix) => {
-        const user = message.mentions.users.first();
+  run: async (client, message, args, prefix) => {
+    const color = message.guild.members.me.displayHexColor !== '#000000'
+      ? message.guild.members.me.displayHexColor : client.config.embedColor;
 
-    let sender = message.author;
+    const user = message.mentions.users.first();
+    if (!user) return message.reply({ embeds: [new EmbedBuilder().setColor(color).setDescription('Please mention a user to rob!')] });
+    if (user.id === message.author.id) return message.reply({ embeds: [new EmbedBuilder().setColor(color).setDescription("You can't rob yourself!")] });
+    if (user.bot) return message.reply({ embeds: [new EmbedBuilder().setColor(color).setDescription("You can't rob a bot!")] });
 
+    const result = await cs.rob({
+      user: message.author,
+      user2: user,
+      guild: { id: null },
+      minAmount: 100,
+      successPercentage: 50,
+      cooldown: 25,
+      maxRob: 1000
+    });
 
-let result = await cs.rob({
-
-            user: sender,
-
-            user2: user,
-
-            guild:{id: null},
-
-            minAmount: 100,
-
-            successPercentage: 5,
-
-            cooldown: 25, //25 seconds,
-
-            maxRob: 1000
-
-        });
-
-
-if (result.error) {
-
-    if (result.type === "time"){
-
-        const time = new EmbedBuilder()
-
-        .setColor(message.guild.members.me.displayHexColor !== '#000000' ? message.guild.members.me.displayHexColor : client.config.embedColor)
-
-        .setDescription(`You have already robbed recently Try again in ${result.time}`)
-
-      return message.reply({embeds: [time]})
-        }
-if (result.type === "low-money"){
-
-        const low = new EmbedBuilder()
-
-        .setColor(message.guild.members.me.displayHexColor !== '#000000' ? message.guild.members.me.displayHexColor : client.config.embedColor)
-
-        .setDescription(`You need atleast $${result.minAmount} to rob somebody.`)
-
-      return message.reply({embeds: [low]})
+    if (result.error) {
+      if (result.type === "time") return message.reply({ embeds: [new EmbedBuilder().setColor(color).setDescription(`You've already robbed recently. Try again in **${result.time}**`)] });
+      if (result.type === "low-money") return message.reply({ embeds: [new EmbedBuilder().setColor(color).setDescription(`You need at least **${result.minAmount}** coins in your wallet to rob someone.`)] });
+      if (result.type === "low-wallet") return message.reply({ embeds: [new EmbedBuilder().setColor(color).setDescription(`**${result.user2.username}** has less than **${result.minAmount}** coins — not worth it!`)] });
+      if (result.type === "caught") return message.reply({ embeds: [new EmbedBuilder().setColor(color).setDescription(`You got caught robbing **${result.user2.username}** and paid a fine of **${result.amount}** coins!`)] });
     }
-if (result.type === "low-wallet"){
 
-        const you = new EmbedBuilder()
-
-        .setColor(message.guild.members.me.displayHexColor !== '#000000' ? message.guild.members.me.displayHexColor : client.config.embedColor)
-
-        .setDescription(`${result.user2.username} have less than $${result.minAmount} to rob.`)
-
-      return message.reply({embeds: [you]})
-        }
-      if (result.type === "caught"){
-
-        const caught = new EmbedBuilder()
-
-        .setColor(message.guild.members.me.displayHexColor !== '#000000' ? message.guild.members.me.displayHexColor : client.config.embedColor)
-
-        .setDescription(`you robbed ${result.user2.username} and got caught and you payed ${result.amount} to ${result.user2.username}!`)
-
-      return message.reply({embeds: [caught]})
-       }
-  } else {
-
-    if (result.type === "success")
-
-      {    
-
-        const lms = new EmbedBuilder()
-
-        .setColor(message.guild.members.me.displayHexColor !== '#000000' ? message.guild.members.me.displayHexColor : client.config.embedColor)
-
-          .setDescription(`
-
-you robbed ${result.user2.username} and got away with ${result.amount}!`)
-
-      return message.reply({embeds: [lms]})
-}
-                                    }
+    if (result.type === "success") {
+      return message.reply({ embeds: [new EmbedBuilder().setColor(color).setDescription(`You robbed **${result.user2.username}** and got away with <a:bitcoin:1055862360713220237> **${result.amount}** coins!`)] });
     }
   }
+};

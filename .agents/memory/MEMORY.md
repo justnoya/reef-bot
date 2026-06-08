@@ -1,0 +1,2 @@
+- [ReefBot DB migration](reef-db-migration.md) — MongoDB/quickmongo/currency-system fully replaced with pg; all adapters in util/db.js with mongoose-compatible API
+- [ReefBot V2 components](reef-v2-components.md) — V2components/ folder created; all types 1–17 + modal + containerModal + unfurledMediaItem in separate files

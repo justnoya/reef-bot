@@ -19,7 +19,6 @@
     "webhook_error": "WEBHOOK",
     "server_add": "WEBHOOK",
     "server_remove": "WEBHOOK"
-  },
-
+  }
 }
   
