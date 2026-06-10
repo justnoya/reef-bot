@@ -1,98 +1,67 @@
-const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, AttachmentBuilder } = require("discord.js");
-
+const { EmbedBuilder, ActionRowBuilder, ButtonBuilder } = require("discord.js");
 const { post } = require("node-superfetch");
 
 module.exports = {
   name: "eval",
-  description:"evaluates the given code",
-  aliases:['ev'],
-  owner:true,
+  description: "Evaluates the given code",
+  aliases: ["ev"],
+  owner: true,
+
   run: async (client, message, args) => {
-      function send(MMM, cha){
-if(!cha){
-   cha = message.channel.id
-  }
+    const color = message.guild.members.me.displayHexColor !== "#000000"
+      ? message.guild.members.me.displayHexColor
+      : client.config.embedColor;
 
-    let cnel = client.channels.cache.get(cha);
-if(!cnel)  {
-           return "SendErr: Channel not found.";
- }
+    const nembed = new EmbedBuilder()
+      .setColor(color)
+      .setDescription("<:11:1052589045374533653> Only bot owners can run this command.")
+      .setFooter({ text: message.author.tag });
 
-  if(!MMM){
- return "SendErr: Message not provided.";
-}
-  return cnel.send(MMM);
-}
-      const embed= new EmbedBuilder();
-      embed.setColor(message.guild.members.me.displayHexColor !== '#000000' ? message.guild.members.me.displayHexColor : client.config.embedColor);
- const row = new ActionRowBuilder()
-           .addComponents(new ButtonBuilder()
-    .setEmoji("993492852023762965")
-    .setCustomId('DELETE_BUT')
-    .setStyle("Danger"));
+    if (!client.config.owner.includes(message.author.id))
+      return message.channel.send({ embeds: [nembed] });
 
-     
+    const row = new ActionRowBuilder().addComponents(
+      new ButtonBuilder()
+        .setEmoji("993492852023762965")
+        .setCustomId("DELETE_BUT")
+        .setStyle(4)
+    );
 
-      const em1 = new EmbedBuilder();
-      const nembed = new EmbedBuilder()
-      .setColor(`${client.config.embedColor}`)
-      .setDescription("<:11:1052589045374533653> You are not allowed to run this command! Only the Owners are allowed to run this command!")            
-      .setFooter({text:message.author.tag})
-  
-  if (!client.config.owner.includes(message.author.id)) return message.channel.send({
-      embeds: [nembed]
-  });
-        
-      
+    const code = args.join(" ");
+    if (!code) return message.channel.send({ content: "```js\nundefined```", components: [row] });
 
-       let a = "";
+    let output = "";
 
+    try {
+      let evaled = await eval(code);
+      if (typeof evaled !== "string") evaled = require("util").inspect(evaled, { depth: 0 });
+
+      // Sanitize: escape backticks, zero-width space after @, redact token
+      evaled = clean(evaled, client.token);
+
+      if (evaled.length > 1800) {
         try {
-            const code = args.join(" ");
-            if (!code) return  message.channel.send({content: `\`\`\`js\nundefined\`\`\``, components: [row]});
-            let evaled;
-
-            if (code.includes(`SECRET`) || code.includes(`client.token`) || code.includes(`TOKEN`) || code.includes("process.env")) {
-                evaled = "No, shut up, what will you do it with the token?";
-            } else {
-                evaled = await eval(code);
-            }
-
-            if (typeof evaled !== "string") evaled = await require("util").inspect(evaled, { depth: 0 });
-
-            let output = clean(evaled);
-            if (output.length > 1024) {
-               
-         const { body } = await post("https://hastebin.com/documents").send(output);
-                a += `https://hastebin.com/${body.key}.js`;
-              
-            } else {
-                a += "```js\n" + output + "```";
-            }
-
-            message.channel.send({content: `${a}`, components: [row]});
-
-        } catch (error) {
-            let err = clean(error);
-            if (err.length > 1024) {
-               
-                const { body } = await post("https://hastebin.com/documents").send(err);
-                a += `https://hastebin.com/${body.key}.js`;
-            } else {
-                a += "```js\n" + err + "```";
-            }
-
-             message.channel.send({content: `${a}`, components: [row]});
-  
+          const { body } = await post("https://hastebin.com/documents").send(evaled);
+          output = `https://hastebin.com/${body.key}.js`;
+        } catch {
+          output = "```js\n[Output too long and hastebin failed]```";
         }
+      } else {
+        output = "```js\n" + evaled + "```";
+      }
+    } catch (error) {
+      const err = clean(String(error), client.token);
+      output = "```js\n" + err + "```";
     }
-}
 
-function clean(string) {
-    if (typeof text === "string") {
-        return string.replace(/`/g, "`" + String.fromCharCode(8203))
-            .replace(/@/g, "@" + String.fromCharCode(8203))
-    } else {
-        return string;
-    }
+    return message.channel.send({ content: output, components: [row] });
+  },
+};
+
+function clean(string, token) {
+  if (typeof string !== "string") return String(string);
+  return string
+    .replace(/`/g, "`\u200b")
+    .replace(/@/g, "@\u200b")
+    .replace(token ?? "", "[REDACTED]");
 }

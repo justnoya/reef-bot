@@ -1,176 +1,97 @@
 const {
   EmbedBuilder,
-  PermissionsBitField,
-  ApplicationCommandOptionType,
   ActionRowBuilder,
   ButtonBuilder,
 } = require("discord.js");
 const User = require("../../Models/User.js");
-const min = 1;
-const max = 100;
-const t = Math.random() * (max - min) + min;
 
 module.exports = {
   name: "gamble",
-  description: "Gamble with an user",
+  description: "Gamble coins with another user",
   category: "economy",
   aliases: ["bet"],
   cooldown: 5,
 
   run: async (client, message, args, prefix) => {
+    const color = message.guild.members.me.displayHexColor !== "#000000"
+      ? message.guild.members.me.displayHexColor
+      : client.config.embedColor;
+
     const user = message.mentions.users.first();
-    let sender = message.author;
-    let money = parseInt(args[1]);
+    const sender = message.author;
+    const money = parseInt(args[1]);
 
-    if (!args[0]) return message.channel.send(`Enter an user to bet`);
-    if (!args[1]) return message.channel.send(`Enter an amount to bet`);
-    if (isNaN(args[1])) {
-      return message.channel.send(`Thats not a valid number`);
-    }
-    if (args[1] < 1)
-      return message.channel.send(`You can't gamble less than 1 coin!`);
+    if (!user) return message.channel.send("You need to mention someone to gamble with!");
+    if (!args[1]) return message.channel.send("Enter an amount to bet.");
+    if (isNaN(args[1])) return message.channel.send("That's not a valid number.");
+    if (money < 1) return message.channel.send("You can't gamble less than 1 coin!");
+    if (user.id === sender.id) return message.channel.send("You can't gamble with yourself!");
+    if (user.bot) return message.channel.send("You can't gamble with a bot!");
 
-    let sendermoney =
-      (await User.findOne({
-        userId: sender.id,
-      })) || new User({ userId: sender.id });
+    let sendermoney = (await User.findOne({ userId: sender.id })) || new User({ userId: sender.id });
+    let usermoney = (await User.findOne({ userId: user.id })) || new User({ userId: user.id });
 
-    let usermoney =
-      (await User.findOne({
-        userId: user.id,
-      })) || new User({ userId: user.id });
+    if (money > sendermoney.wallet) return message.channel.send("You don't have enough coins to gamble!");
+    if (money > usermoney.wallet) return message.channel.send("The user you're challenging doesn't have enough coins!");
 
-    if (!user)
-      return message.channel.send(
-        `You need to mention someone to gamble with!`
-      );
-    if (args[1] > sendermoney.wallet)
-      return message.channel.send(`You don't have enough coins to gamble!`);
-    if (args[1] > usermoney.wallet)
-      return message.channel.send(
-        `The user you are trying to gamble with doesn't have enough coins!`
-      );
-    if (user.id == sender.id)
-      return message.channel.send(`You can't gamble with yourself!`);
-    if (user.bot) return message.channel.send(`You can't gamble with a bot!`);
+    const row = new ActionRowBuilder().addComponents(
+      new ButtonBuilder().setLabel("Accept").setStyle(3).setCustomId("gamble_accept"),
+      new ButtonBuilder().setLabel("Decline").setStyle(4).setCustomId("gamble_reject")
+    );
+    const rowDisabled = new ActionRowBuilder().addComponents(
+      new ButtonBuilder().setLabel("Accept").setStyle(3).setCustomId("gamble_accept_d").setDisabled(true),
+      new ButtonBuilder().setLabel("Decline").setStyle(4).setCustomId("gamble_reject_d").setDisabled(true)
+    );
 
-    if (
-      user &&
-      args[1] &&
-      !isNaN(args[1]) &&
-      args[1] > 0 &&
-      args[1] <= sendermoney.wallet &&
-      args[1] <= usermoney.wallet &&
-      user.id != sender.id &&
-      !user.bot
-    ) {
-      let amount = money;
-      let row = new ActionRowBuilder().addComponents(
-        new ButtonBuilder()
-          .setLabel("Accept")
-          .setStyle("Success")
-          .setCustomId("accept"),
-        new ButtonBuilder()
-          .setLabel("Decline")
-          .setStyle("Danger")
-          .setCustomId("reject")
-      );
-      let rowx = new ActionRowBuilder().addComponents(
-        new ButtonBuilder()
-          .setLabel("Accept")
-          .setStyle("Success")
-          .setCustomId("disabledAccept")
-          .setDisabled(),
-        new ButtonBuilder()
-          .setLabel("Decline")
-          .setStyle("Danger")
-          .setCustomId("disabledReject")
-          .setDisabled(true)
-      );
+    const msg = await message.channel.send({
+      content: `${user}, **${sender.username}** challenged you to a **${money}** coin gamble!`,
+      components: [row],
+    });
 
-      let msg = await message.channel.send({
-        content: `${user.username}, ${sender.username} invited you in ${args[1]} coins gamble.`,
-        components: [row],
-      });
+    const filter = async (inter) => {
+      if (inter.user.id === user.id) return true;
+      await inter.reply({ content: `Only **${user.tag}** can respond to this challenge!`, ephemeral: true });
+      return false;
+    };
 
-      const filter = async (inter) => {
-        if (user.id == inter.user.id) return true;
-        else {
-          await inter.reply({
-            content: `${inter.user.tag}, Only **${user.tag}** can interact with buttons!`,
-            ephemeral: true,
-          });
-          return false;
-        }
-      };
-      const collector = await msg.createMessageComponentCollector({
-        filter,
-        time: 30000,
-      });
-      let b = false;
-      collector.on("collect", async (i) => {
-        await i.deferUpdate();
-        if (i.customId === "accept") {
-          if (!b) {
-            if (i.user.id == user.id) {
-              b = true;
-              collector.stop();
-            }
-            check();
-            return;
-          }
-        }
-        if (i.customId === "reject") {
-          collector.stop();
-          return message.channel.send({
-            content: `Gamble aborted by **${i.user.tag}** !`,
-          });
-        }
-      });
+    const collector = msg.createMessageComponentCollector({ filter, time: 30_000 });
+    let handled = false;
 
-      collector.on("end", () => {
-        return msg.edit({ components: [rowx] });
-      });
+    collector.on("collect", async (i) => {
+      if (handled) return;
+      handled = true;
+      collector.stop();
+      await i.deferUpdate();
 
-      async function check() {
-        let ar;
-        let result = t;
-        if (result <= 50) ar = true;
-        else ar = false;
-        let msg = await message.channel.send("3..2..1");
-        setTimeout(async () => {
-          if (ar) {
-            /**
-             * sender Won!
-             */
-            sendermoney.wallet += amount;
-            usermoney.wallet -= amount;
-            await sendermoney.save();
-            await usermoney.save();
-            if (result.error)
-              return interaction.reply(
-                `${user} don't have enough money in your wallet.`
-              );
-            return msg.edit(
-              `${sender} won **${args[1]}** ${
-                amount <= 1 ? "credit" : "credits"
-              }`
-            );
-          } else {
-            /**
-             * User Won!
-             */
-            sendermoney.wallet -= amount;
-            usermoney.wallet += amount;
-            await sendermoney.save();
-            await usermoney.save();
-
-            return msg.edit(
-              `${user} won **${args[1]}** ${amount <= 1 ? "credit" : "credits"}`
-            );
-          }
-        }, 1500);
+      if (i.customId === "gamble_reject") {
+        return msg.edit({ content: `**${user.tag}** declined the gamble.`, components: [rowDisabled] });
       }
-    }
+
+      await msg.edit({ content: "3... 2... 1...", components: [rowDisabled] });
+
+      // Fresh random on every gamble, not a module-level constant
+      const senderWins = Math.random() < 0.5;
+
+      sendermoney = (await User.findOne({ userId: sender.id })) || sendermoney;
+      usermoney   = (await User.findOne({ userId: user.id }))   || usermoney;
+
+      if (senderWins) {
+        sendermoney.wallet += money;
+        usermoney.wallet   -= money;
+        await sendermoney.save();
+        await usermoney.save();
+        return setTimeout(() => msg.edit({ content: `🎉 **${sender.username}** won **${money}** ${money === 1 ? "coin" : "coins"}!` }), 1500);
+      } else {
+        sendermoney.wallet -= money;
+        usermoney.wallet   += money;
+        await sendermoney.save();
+        await usermoney.save();
+        return setTimeout(() => msg.edit({ content: `🎉 **${user.username}** won **${money}** ${money === 1 ? "coin" : "coins"}!` }), 1500);
+      }
+    });
+
+    collector.on("end", () => {
+      if (!handled) msg.edit({ content: "Gamble timed out.", components: [rowDisabled] }).catch(() => {});
+    });
   },
 };

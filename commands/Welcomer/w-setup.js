@@ -1,50 +1,43 @@
+const { EmbedBuilder, PermissionsBitField } = require("discord.js");
+const db = require(process.cwd() + "/schema/welcomer.js");
 
-const { EmbedBuilder, PermissionsBitField, ApplicationCommandOptionType } = require("discord.js");
-const db = require(process.cwd()+'/schema/welcomer.js')
 module.exports = {
-    name: "w-setup",
-    description: "Set up welcomer.",
-  category:'welcome',
+  name: "w-setup",
+  description: "Set up the welcome channel.",
+  category: "welcome",
   cooldown: 5,
   userPerms: ["Administrator"],
-   
-    run: async (client, message, args, prefix) => {
-        
-    const channelA = message.mentions.channels.first();    
-    
-    let nocha = new EmbedBuilder()
-.setDescription(`<:11:1052589045374533653> That\'s not a text channel.`)
-.setColor(message.guild.members.me.displayHexColor !== '#000000' ? message.guild.members.me.displayHexColor : client.config.embedColor)
 
-    if(!channelA.isTextBased())
-return message.reply({embeds:[nocha]});
- 
-        
-        
-let data = await db.findOne({'guild': message.guild.id})
+  run: async (client, message, args, prefix) => {
+    const color = message.guild.members.me.displayHexColor !== "#000000"
+      ? message.guild.members.me.displayHexColor
+      : client.config.embedColor;
 
-if(!data) {
-data = new db({
-guild: message.guild.id,
-enabled: true,
-channel: channelA.id
-}).save();
-}
+    const channelA = message.mentions.channels.first();
 
- if(data) {
- await db.updateOne({
-guild: message.guild.id},{
-enabled: true,
-channel: channelA.id
-})
+    if (!channelA) {
+      return message.reply({
+        embeds: [new EmbedBuilder().setColor(color).setDescription("<:11:1052589045374533653> Please mention a text channel.")]
+      });
+    }
 
-}
- 
+    if (!channelA.isTextBased()) {
+      return message.reply({
+        embeds: [new EmbedBuilder().setColor(color).setDescription("<:11:1052589045374533653> That's not a text channel.")]
+      });
+    }
 
+    let data = await db.findOne({ guild: message.guild.id });
 
-const xddn = new EmbedBuilder ()
-.setDescription(`<:10:1052589041717092412> Welcomer is now enabled in: ` + `<#${channelA.id}>`)
-.setColor(message.guild.members.me.displayHexColor !== '#000000' ? message.guild.members.me.displayHexColor : client.config.embedColor)
+    if (!data) {
+      data = new db({ guild: message.guild.id, enabled: "true", channel: channelA.id });
+      await data.save();
+    } else {
+      await db.updateOne({ guild: message.guild.id }, { enabled: "true", channel: channelA.id });
+    }
 
-message.reply({embeds:[xddn]})
-}}
+    return message.reply({
+      embeds: [new EmbedBuilder().setColor(color).setDescription(`<:10:1052589041717092412> Welcomer is now enabled in <#${channelA.id}>.`)]
+    });
+  }
+};

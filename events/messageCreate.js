@@ -231,9 +231,9 @@ var m = "";
     .setEmoji("<:vote:985926662552178748>")
     .setURL(`https://top.gg/bot/${client.user.id}/vote`)
                         );
-      embed.setDescription(`You must [vote](https://top.gg/bot/${client.user.id}/vote) me to use this command. If you want to disable this then [click here](${client.config.links.dc}) to buy [premium](${client.config.links.dc}) to listen interruption free **music**!`)
+      em.setDescription(`You must [vote](https://top.gg/bot/${client.user.id}/vote) me to use this command. If you want to disable this then [click here](${client.config.links.dc}) to buy [premium](${client.config.links.dc}) to listen interruption free **music**!`)
       .setColor(message.guild.members.me.displayHexColor !== '#000000' ? message.guild.members.me.displayHexColor : client.config.embedColor)
-    return message.channel.send({embeds: [embed], components: [row]})
+    return message.channel.send({embeds: [em], components: [row]})
     }
   } 
   //premium ends

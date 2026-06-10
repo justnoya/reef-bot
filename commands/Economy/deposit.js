@@ -1,80 +1,37 @@
-const {
-  EmbedBuilder,
-  PermissionsBitField,
-  ApplicationCommandOptionType,
-  MessageEmbed,
-} = require("discord.js");
-
+const { EmbedBuilder } = require("discord.js");
 const User = require("../../Models/User.js");
 
 module.exports = {
   name: "deposit",
-
-  description: "Deposit The balance of an user",
-
+  description: "Deposit coins into your bank.",
   category: "economy",
-
   aliases: ["dep"],
-
   cooldown: 2,
 
   run: async (client, message, args, prefix) => {
-    const user = message.author;
+    const color = message.guild.members.me.displayHexColor !== "#000000"
+      ? message.guild.members.me.displayHexColor
+      : client.config.embedColor;
+
+    const user   = message.author;
     const amount = parseInt(args[0]);
 
-    const result =
-      (await User.findOne({ userId: user.id })) ||
-      new User({ userId: user.id });
-    // run: async (interaction) => {
+    const result = (await User.findOne({ userId: user.id })) || new User({ userId: user.id });
 
-    const give = new EmbedBuilder()
+    if (!amount || isNaN(amount) || amount < 1)
+      return message.reply({ embeds: [new EmbedBuilder().setColor(color).setDescription("<:11:1052589045374533653> Enter a valid amount.")] });
 
-      .setColor(
-        message.guild.members.me.displayHexColor !== "#000000"
-          ? message.guild.members.me.displayHexColor
-          : client.config.embedColor
-      )
-
-      .setDescription(`<:11:1052589045374533653> Enter A Valid Amount`);
-
-    if (!amount) return message.reply({ embeds: [give] });
-
-    const crs = new EmbedBuilder()
-
-      .setColor(
-        message.guild.members.me.displayHexColor !== "#000000"
-          ? message.guild.members.me.displayHexColor
-          : client.config.embedColor
-      )
-
-      .setDescription(
-        `💰 You need \` ${
-          amount - result.wallet
-        } 🪙 \` more in your wallet to deposit money`
-      );
-
-    if (result.wallet < amount) return message.reply({ embeds: [crs] });
-
-    // embed = new MessageEmbed({ color: "YELLOW" })
-
-    const success = new EmbedBuilder()
-
-      .setColor(
-        message.guild.members.me.displayHexColor !== "#000000"
-          ? message.guild.members.me.displayHexColor
-          : client.config.embedColor
-      )
-
-      .setDescription(
-        `✅ You have deposited \` ${amount} 🪙 \` amount into your bank account`
-      );
+    if (result.wallet < amount)
+      return message.reply({
+        embeds: [new EmbedBuilder().setColor(color).setDescription(`💰 You need \`${amount - result.wallet} 🪙\` more in your wallet.`)]
+      });
 
     result.wallet -= amount;
+    result.bank   += amount;
+    await result.save();
 
-    result.bank += amount;
-
-    result.save();
-
-    return message.reply({ embeds: [success] });
+    return message.reply({
+      embeds: [new EmbedBuilder().setColor(color).setDescription(`✅ You deposited \`${amount} 🪙\` into your bank.`)]
+    });
   },
 };
