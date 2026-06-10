@@ -7,6 +7,15 @@ const User  = require("../Models/User");
 const { slash } = require(`${process.cwd()}/util/onCoolDown.js`);
 
 module.exports.run = async (client, interaction) => {
+  // ── Autocomplete ─────────────────────────────────────────────────────────────
+  if (interaction.isAutocomplete()) {
+    const command = client.slash.get(interaction.commandName);
+    if (command?.autocomplete) {
+      try { await command.autocomplete(client, interaction); } catch { interaction.respond([]).catch(() => {}); }
+    }
+    return;
+  }
+
   let prefix = await client.db.get(`prefix_${interaction.guild?.id}`);
   if (prefix === null) prefix = client.prefix;
 
