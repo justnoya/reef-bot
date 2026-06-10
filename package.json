@@ -10,10 +10,14 @@
     "type": "git",
     "url": "git+https://github.com/Drix10/reef-bot.git"
   },
-  "keywords": ["Discord", "bot"],
+  "keywords": [
+    "Discord",
+    "bot"
+  ],
   "author": "drix10-aryan",
   "license": "MIT",
   "dependencies": {
+    "@discordjs/voice": "^0.18.0",
     "@top-gg/sdk": "^3.1.3",
     "ascii-table": "0.0.9",
     "chalk": "^4.1.2",
@@ -29,9 +33,12 @@
     "node-cron": "^3.0.2",
     "node-os-utils": "^1.3.7",
     "node-superfetch": "^0.2.3",
+    "opusscript": "^0.0.8",
     "pg": "^8.11.3",
+    "play-dl": "^1.9.7",
     "pretty-ms": "^7.0.1",
     "qrcode": "^1.5.1",
-    "topgg-autoposter": "^2.0.1"
+    "topgg-autoposter": "^2.0.1",
+    "youtube-sr": "^4.3.12"
   }
 }

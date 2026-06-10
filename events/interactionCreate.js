@@ -1,5 +1,7 @@
 const { EmbedBuilder, ButtonBuilder, ActionRowBuilder, PermissionsBitField } = require('discord.js');
 const { buildCategoryContainer, buildMainContainer, IS_COMPONENTS_V2 } = require('../util/helpBuilder');
+const { buildPlayerContainer, buildSearchResultsContainer } = require('../util/musicPlayerUI');
+const musicManager = require('../util/MusicManager');
 
 const User  = require("../Models/User");
 const { slash } = require(`${process.cwd()}/util/onCoolDown.js`);
@@ -12,9 +14,103 @@ module.exports.run = async (client, interaction) => {
     ? interaction.guild?.members?.me?.displayHexColor
     : client.config.embedColor;
 
+  const accentInt = accent ? parseInt(accent.replace('#', ''), 16) : 0x2f3136;
+
   // ── Help: select menu ────────────────────────────────────────────────────────
   if (interaction.isStringSelectMenu?.() || interaction.isSelectMenu?.()) {
-    if (interaction.customId === 'helpop') {
+    const customId = interaction.customId;
+
+    // ── Music: search result picker ─────────────────────────────────────────
+    if (customId === 'music_select_result') {
+      const cache = client._musicSearchCache?.get(interaction.user.id);
+      if (!cache) {
+        return interaction.reply({ content: '❌ Search session expired. Run `/play` again.', ephemeral: true });
+      }
+
+      const idx = parseInt(interaction.values[0].replace('result_', ''), 10);
+      const track = cache.results[idx];
+      if (!track) return interaction.reply({ content: '❌ Invalid selection.', ephemeral: true });
+
+      const voiceChannel = interaction.member?.voice?.channel;
+      if (!voiceChannel) {
+        return interaction.reply({ content: '❌ Join a voice channel first!', ephemeral: true });
+      }
+
+      await interaction.deferUpdate();
+
+      try {
+        let q = musicManager.getQueue(interaction.guild.id);
+        if (!q || !q.connection) {
+          q = await musicManager.join(voiceChannel, interaction.guild.voiceAdapterCreator, interaction.guild.id);
+        }
+
+        q.tracks = [track];
+        q.currentIndex = 0;
+
+        if (q.player) q.player.stop(true);
+
+        await musicManager.playTrack(q, track, async () => {});
+
+        const playerContainer = buildPlayerContainer(track, accentInt, false);
+        await interaction.editReply({
+          flags: require('../util/musicPlayerUI').IS_COMPONENTS_V2,
+          components: [playerContainer],
+        }).catch(() => {});
+
+        client._musicSearchCache?.delete(interaction.user.id);
+      } catch (err) {
+        console.error('[Music select]', err);
+        interaction.followUp({ content: `❌ Error: ${err.message}`, ephemeral: true }).catch(() => {});
+      }
+      return;
+    }
+
+    // ── Music: player options select ─────────────────────────────────────────
+    if (customId === 'music_options') {
+      const value = interaction.values[0];
+      const q = musicManager.getQueue(interaction.guild.id);
+
+      await interaction.deferUpdate();
+
+      if (value === 'stop') {
+        musicManager.stop(interaction.guild.id);
+        return interaction.editReply({ content: '⏹ Stopped and disconnected.', components: [], flags: 0 }).catch(() => {});
+      }
+
+      if (!q) {
+        return interaction.followUp({ content: '❌ Nothing is playing right now.', ephemeral: true }).catch(() => {});
+      }
+
+      let reply = '';
+      if (value === 'autoplay')       { q.autoplay   = !q.autoplay;   reply = `🔄 Autoplay **${q.autoplay ? 'ON' : 'OFF'}**`; }
+      if (value === 'loop_queue')     { q.loopQueue  = !q.loopQueue;  reply = `🔁 Loop Queue **${q.loopQueue ? 'ON' : 'OFF'}**`; }
+      if (value === 'loop_song')      { q.loopSong   = !q.loopSong;   reply = `🔂 Loop Song **${q.loopSong ? 'ON' : 'OFF'}**`; }
+      if (value === 'smart_shuffle')  { q.tracks.sort(() => Math.random() - 0.5); reply = '🔀 Queue shuffled!'; }
+      if (value === 'reconnect') {
+        const vc = interaction.member?.voice?.channel;
+        if (vc) { musicManager.reconnect(q, vc); reply = '🔌 Reconnected!'; }
+        else reply = '❌ Join a voice channel first.';
+      }
+      if (value === 'radio')   { reply = '📻 Radio mode coming soon!'; }
+      if (value === 'lyrics')  { reply = '📜 Lyrics feature coming soon!'; }
+      if (value === 'add_songs') { reply = '➕ Use `/play <song>` to add more songs to the queue!'; }
+
+      if (reply) {
+        interaction.followUp({ content: reply, ephemeral: true }).catch(() => {});
+      }
+
+      if (q?.current) {
+        const updatedContainer = buildPlayerContainer(q.current, accentInt, q.paused);
+        interaction.editReply({
+          flags: require('../util/musicPlayerUI').IS_COMPONENTS_V2,
+          components: [updatedContainer],
+        }).catch(() => {});
+      }
+      return;
+    }
+
+    // ── Help select menu ─────────────────────────────────────────────────────
+    if (customId === 'helpop') {
       const value = interaction.values[0];
 
       if (value === 'home') {
@@ -38,10 +134,68 @@ module.exports.run = async (client, interaction) => {
     return;
   }
 
-  // ── Help: navigation buttons ─────────────────────────────────────────────────
+  // ── Buttons ──────────────────────────────────────────────────────────────────
   if (interaction.isButton()) {
-    // Back → show main menu
-    if (interaction.customId === 'helpback') {
+    const customId = interaction.customId;
+
+    // ── Music buttons ────────────────────────────────────────────────────────
+    if (customId.startsWith('music_')) {
+      const q = musicManager.getQueue(interaction.guild.id);
+
+      if (customId === 'music_playlists') {
+        return interaction.reply({ content: '🎵 Playlist feature coming soon!', ephemeral: true });
+      }
+      if (customId === 'music_browse') {
+        return interaction.reply({ content: '🔍 Browse feature coming soon!', ephemeral: true });
+      }
+      if (customId === 'music_settings') {
+        return interaction.reply({ content: '⚙️ Settings feature coming soon!', ephemeral: true });
+      }
+
+      if (!q || !q.current) {
+        return interaction.reply({ content: '❌ Nothing is playing right now.', ephemeral: true });
+      }
+
+      await interaction.deferUpdate();
+
+      if (customId === 'music_prev') {
+        const ok = musicManager.prev(interaction.guild.id);
+        if (!ok) {
+          interaction.followUp({ content: '⏮ No previous song in queue.', ephemeral: true }).catch(() => {});
+        }
+      }
+
+      if (customId === 'music_pause') {
+        const nowPaused = musicManager.pause(interaction.guild.id);
+        const updatedContainer = buildPlayerContainer(q.current, accentInt, nowPaused);
+        return interaction.editReply({
+          flags: require('../util/musicPlayerUI').IS_COMPONENTS_V2,
+          components: [updatedContainer],
+        }).catch(() => {});
+      }
+
+      if (customId === 'music_skip') {
+        musicManager.skip(interaction.guild.id);
+        interaction.followUp({ content: '⏭ Skipped!', ephemeral: true }).catch(() => {});
+      }
+
+      if (customId === 'music_stop') {
+        musicManager.stop(interaction.guild.id);
+        return interaction.editReply({ content: '⏹ Stopped and disconnected.', components: [], flags: 0 }).catch(() => {});
+      }
+
+      if (q?.current && customId !== 'music_stop') {
+        const updatedContainer = buildPlayerContainer(q.current, accentInt, q.paused);
+        interaction.editReply({
+          flags: require('../util/musicPlayerUI').IS_COMPONENTS_V2,
+          components: [updatedContainer],
+        }).catch(() => {});
+      }
+      return;
+    }
+
+    // ── Help: Back button ────────────────────────────────────────────────────
+    if (customId === 'helpback') {
       const inviteURL  = `https://discord.com/oauth2/authorize?client_id=${client.user.id}&permissions=8&scope=applications.commands%20bot`;
       const supportURL = client.config.links.dc;
       const container  = buildMainContainer(client, prefix, accent, inviteURL, supportURL);
@@ -51,9 +205,9 @@ module.exports.run = async (client, interaction) => {
       }).catch(() => {});
     }
 
-    // Previous / Next → helpcat_<category>_<page>
-    if (interaction.customId.startsWith('helpcat_')) {
-      const parts    = interaction.customId.split('_');
+    // ── Help: Prev/Next pages ─────────────────────────────────────────────────
+    if (customId.startsWith('helpcat_')) {
+      const parts    = customId.split('_');
       const category = parts[1];
       const page     = parseInt(parts[2], 10) || 0;
       const container = buildCategoryContainer(client, category, page, prefix, accent);
@@ -65,9 +219,18 @@ module.exports.run = async (client, interaction) => {
       }
     }
 
-    // Disabled no-op buttons — just ack silently
-    if (interaction.customId.startsWith('help_noop')) {
+    // ── Help: no-op disabled buttons ──────────────────────────────────────────
+    if (customId.startsWith('help_noop')) {
       return interaction.deferUpdate().catch(() => {});
+    }
+
+    // ── Delete button ─────────────────────────────────────────────────────────
+    if (customId === 'DELETE_BUT') {
+      const em = new EmbedBuilder().setDescription('Only Bot Owner Can Use This Button').setColor('#ff0000');
+      if (client.config.owner.includes(interaction.member?.user?.id))
+        return interaction.message.delete();
+      else
+        return interaction.reply({ embeds: [em], ephemeral: true });
     }
   }
 
