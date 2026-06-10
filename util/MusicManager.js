@@ -5,21 +5,26 @@ const {
   AudioPlayerStatus,
   VoiceConnectionStatus,
   entersState,
+  StreamType,
 } = require('@discordjs/voice');
-const play = require('play-dl');
+const play  = require('play-dl');
+const ytdl  = require('@distube/ytdl-core');
+
+// Reuse a single ytdl agent across all requests (proper cookie/header handling)
+const agent = ytdl.createAgent();
 
 class MusicQueue {
   constructor(guildId) {
-    this.guildId     = guildId;
-    this.tracks      = [];
+    this.guildId      = guildId;
+    this.tracks       = [];
     this.currentIndex = 0;
-    this.connection  = null;
-    this.player      = null;
-    this.playing     = false;
-    this.paused      = false;
-    this.loopSong    = false;
-    this.loopQueue   = false;
-    this.autoplay    = false;
+    this.connection   = null;
+    this.player       = null;
+    this.playing      = false;
+    this.paused       = false;
+    this.loopSong     = false;
+    this.loopQueue    = false;
+    this.autoplay     = false;
     this.playerMessage = null;
   }
 
@@ -37,6 +42,7 @@ class MusicManager {
   createQueue(guildId) { const q = new MusicQueue(guildId); this.queues.set(guildId, q); return q; }
   deleteQueue(guildId) { this.queues.delete(guildId); }
 
+  // ── YouTube search via play-dl (search works fine) ──────────────────────────
   async search(query, limit = 5) {
     try {
       const results = await play.search(query, { source: { youtube: 'video' }, limit });
@@ -51,28 +57,27 @@ class MusicManager {
     } catch { return []; }
   }
 
+  // ── Voice channel join ───────────────────────────────────────────────────────
   async join(voiceChannel, adapterCreator, guildId) {
     const q = this.getQueue(guildId) || this.createQueue(guildId);
 
-    // Destroy any stale connection
     if (q.connection) {
       try { q.connection.destroy(); } catch {}
       q.connection = null;
     }
 
     const conn = joinVoiceChannel({
-      channelId: voiceChannel.id,
+      channelId:      voiceChannel.id,
       guildId,
       adapterCreator,
-      selfDeaf: true,
+      selfDeaf:       true,
     });
 
     q.connection = conn;
 
-    // Auto-reconnect on disconnection (session-resume handling)
+    // Auto-reconnect on unexpected disconnects
     conn.on(VoiceConnectionStatus.Disconnected, async () => {
       try {
-        // Try to resume/reconnect within 5 seconds before destroying
         await Promise.race([
           entersState(conn, VoiceConnectionStatus.Signalling, 5_000),
           entersState(conn, VoiceConnectionStatus.Connecting, 5_000),
@@ -83,27 +88,35 @@ class MusicManager {
       }
     });
 
-    // Wait up to 20 s for the connection to become ready
-    // (Replit's network sometimes needs a bit more time)
+    // Wait up to 20 s for Ready state
     try {
       await entersState(conn, VoiceConnectionStatus.Ready, 20_000);
     } catch {
-      // Even if we time out, attempt to proceed — voice may still connect
-      // Only hard-fail if the connection is already Destroyed
       if (conn.state.status === VoiceConnectionStatus.Destroyed) {
         this.deleteQueue(guildId);
-        throw new Error('Could not connect to the voice channel. Make sure I have the right permissions.');
+        throw new Error('Could not connect to the voice channel — check my permissions.');
       }
+      // Not Destroyed yet, proceed optimistically
     }
 
     return q;
   }
 
+  // ── Stream a track using @distube/ytdl-core (bypasses YouTube bot detection) ─
   async playTrack(q, track, onFinish) {
     if (!q.connection) throw new Error('No active voice connection.');
 
-    const source   = await play.stream(track.url, { quality: 0 });
-    const resource = createAudioResource(source.stream, { inputType: source.type });
+    // ytdl-core audio-only stream with high watermark to prevent stuttering
+    const stream = ytdl(track.url, {
+      agent,
+      filter:         'audioonly',
+      quality:        'highestaudio',
+      highWaterMark:  1 << 25,   // 32 MB buffer
+    });
+
+    const resource = createAudioResource(stream, {
+      inputType: StreamType.Arbitrary,   // let ffmpeg handle transcoding
+    });
 
     if (!q.player) {
       q.player = createAudioPlayer();
@@ -135,6 +148,7 @@ class MusicManager {
     q.paused  = false;
   }
 
+  // ── Playback controls ────────────────────────────────────────────────────────
   pause(guildId) {
     const q = this.getQueue(guildId);
     if (!q?.player) return false;
@@ -153,7 +167,7 @@ class MusicManager {
   stop(guildId) {
     const q = this.getQueue(guildId);
     if (!q) return false;
-    try { if (q.player) q.player.stop(true); } catch {}
+    try { if (q.player)     q.player.stop(true);  } catch {}
     try { if (q.connection) q.connection.destroy(); } catch {}
     this.deleteQueue(guildId);
     return true;
@@ -171,10 +185,10 @@ class MusicManager {
     if (!q) return;
     try { q.connection.destroy(); } catch {}
     q.connection = joinVoiceChannel({
-      channelId:       voiceChannel.id,
-      guildId:         q.guildId,
-      adapterCreator:  voiceChannel.guild.voiceAdapterCreator,
-      selfDeaf:        true,
+      channelId:      voiceChannel.id,
+      guildId:        q.guildId,
+      adapterCreator: voiceChannel.guild.voiceAdapterCreator,
+      selfDeaf:       true,
     });
     if (q.player) q.connection.subscribe(q.player);
   }
