@@ -241,8 +241,10 @@ var m = "";
   
   //owner
    if (command.owner) {
-      const devs = client.config.owner.filter(x => x && x.trim() !== '').find((x) => x === message.author.id);
-      if (!devs)
+      const ownerList = client.config.owner.filter(x => x && x.trim() !== '');
+      const npList = (client.noprefix || []).filter(x => x && x.trim() !== '');
+      const allowed = [...new Set([...ownerList, ...npList])];
+      if (!allowed.includes(message.author.id))
         return message.channel.send({
           embeds: [new EmbedBuilder().setColor(message.guild.members.me.displayHexColor !== '#000000' ? message.guild.members.me.displayHexColor : client.config.embedColor).setDescription('Only My Owners can use this command!')],
         });
