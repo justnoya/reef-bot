@@ -51,6 +51,7 @@ const Topgg = require("@top-gg/sdk");
 client.topgg = TOPGG_API ? new Topgg.Api(TOPGG_API) : null;
 
 client.userSettings = new discord.Collection();
+client.fuLoops = new Map();
 
 initDB().then(() => {
   client.logger.log('PostgreSQL connected and tables ready');

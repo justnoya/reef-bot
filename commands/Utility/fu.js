@@ -5,6 +5,7 @@ module.exports = {
     aliases: ['fu'],
     cooldown: 5,
     category: 'utility',
+    owner: true,
     botPerms: ['ManageWebhooks', 'ViewChannel', 'SendMessages'],
     userPerms: ['ManageMessages'],
     usage: ['fu <message>'],
@@ -13,8 +14,6 @@ module.exports = {
     run: async (client, message, args) => {
         const loopMsg = args.join(' ');
         if (!loopMsg) return message.reply({ content: 'Please provide a message to loop.' });
-
-        if (!client.fuLoops) client.fuLoops = new Map();
 
         if (client.fuLoops.has(message.channel.id)) {
             return message.reply({ content: 'A loop is already running in this channel. Use `!s` to stop it first.' });
@@ -31,7 +30,6 @@ module.exports = {
         }
 
         const webhookClient = new WebhookClient({ id: webhook.id, token: webhook.token });
-
         const sentIds = [];
 
         const loopData = {
@@ -39,23 +37,25 @@ module.exports = {
             webhookId: webhook.id,
             sentIds,
             channelId: message.channel.id,
+            active: true,
         };
 
         const sendNext = async () => {
+            if (!loopData.active) return;
             try {
                 const sent = await webhookClient.send({ content: loopMsg });
-                sentIds.push(sent.id);
-            } catch (e) {
-                clearInterval(loopData.interval);
-                client.fuLoops.delete(message.channel.id);
-                try { await webhookClient.delete(); } catch (_) {}
+                if (sent && sent.id) sentIds.push(sent.id);
+            } catch (_) {
+                // Silently skip on rate limit or temporary error — loop stays alive
+                // Only !s can stop the loop
             }
         };
 
-        await sendNext();
-
         loopData.interval = setInterval(sendNext, 300);
         client.fuLoops.set(message.channel.id, loopData);
+
+        // Fire first message immediately
+        sendNext();
 
         try { await message.delete(); } catch (_) {}
     }
