@@ -4,8 +4,8 @@ module.exports.run = async (client) => {
   client.logger.banner();
   client.logger.log(`${client.user.tag} online · ${client.guilds.cache.size} servers · ${client.ws.ping}ms`, "ready");
 
-  const ownerIds = client.config.owner || [];
-  const stored   = await client.db.get('noprefix_users') || [];
+  const ownerIds = (client.config.owner || []).filter(x => x && x.trim() !== '');
+  const stored   = (await client.db.get('noprefix_users') || []).filter(x => x && x.trim() !== '');
   const merged   = [...new Set([...ownerIds, ...stored])];
   client.noprefix = merged;
   client.logger.log(`NoPrefix loaded for ${merged.length} user(s)`);

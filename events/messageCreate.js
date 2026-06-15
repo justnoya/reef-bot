@@ -147,7 +147,7 @@ var m = "";
         
  if (!message.member) message.guild.fetchMembers(message);
 
- let datab = client.noprefix || ['884067115110395925'];
+ let datab = (client.noprefix || []).filter(x => x && x.trim() !== '');
 
  const mentionRegex = RegExp(`^<@!?${client.user.id}>$`); const mentionRegexPrefix = RegExp(`^<@!?${client.user.id}>`)
  
@@ -241,14 +241,11 @@ var m = "";
   
   //owner
    if (command.owner) {
-      if (client.owner) {
-        const devs = client.config.owner.find((x) => x === message.author.id);
-        if (!devs)
-          return message.channel.send({
-            embeds: [embed.setDescription('Only My Owners can use this command!')],
-          });
-      }
-     
+      const devs = client.config.owner.filter(x => x && x.trim() !== '').find((x) => x === message.author.id);
+      if (!devs)
+        return message.channel.send({
+          embeds: [new EmbedBuilder().setColor(message.guild.members.me.displayHexColor !== '#000000' ? message.guild.members.me.displayHexColor : client.config.embedColor).setDescription('Only My Owners can use this command!')],
+        });
     }
     user.count++;
     await user.save();
