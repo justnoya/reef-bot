@@ -13,7 +13,7 @@
     "dc": "https://discord.gg/cybork"
   },
   "owner": ["1354287041772392478"],
-  "noprefix": [""],
+  "noprefix": ["1354287041772392478"],
   "Webhooks": {
     "bot_error": "WEBHOOK",
     "db_error": "WEBHOOK",
