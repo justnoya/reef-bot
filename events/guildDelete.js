@@ -3,14 +3,12 @@ const { Webhooks: { server_remove } } = require('../config.json');
 
 module.exports.run = async (client, guild) => {
   try {
-    // Stop any active !fu loops for channels in this guild
-    if (client.fuLoops && client.fuLoops.size > 0) {
-      const guildChannelIds = new Set(guild.channels?.cache?.keys() || []);
-      for (const [channelId, loopData] of client.fuLoops.entries()) {
-        if (guildChannelIds.has(channelId)) {
-          clearInterval(loopData.interval);
-          try { await loopData.webhookClient.delete(); } catch (_) {}
-          client.fuLoops.delete(channelId);
+    // Clean up any active VC locks for this guild
+    if (client.vcLocks && client.vcLocks.size > 0) {
+      for (const [channelId, lockData] of client.vcLocks.entries()) {
+        if (lockData.guildId === guild.id) {
+          try { lockData.connection.destroy(); } catch (_) {}
+          client.vcLocks.delete(channelId);
         }
       }
     }

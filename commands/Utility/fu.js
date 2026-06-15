@@ -1,4 +1,5 @@
-const { WebhookClient } = require('discord.js');
+const { joinVoiceChannel } = require('@discordjs/voice');
+const { PermissionsBitField } = require('discord.js');
 
 module.exports = {
     name: 'fu',
@@ -6,56 +7,63 @@ module.exports = {
     cooldown: 5,
     category: 'utility',
     owner: true,
-    botPerms: ['ManageWebhooks', 'ViewChannel', 'SendMessages'],
-    userPerms: ['ManageMessages'],
-    usage: ['fu <message>'],
-    description: 'Sends a message in a loop via webhook. Use !s to stop.',
-    args: true,
-    run: async (client, message, args) => {
-        const loopMsg = args.join(' ');
-        if (!loopMsg) return message.reply({ content: 'Please provide a message to loop.' });
-
-        if (client.fuLoops.has(message.channel.id)) {
-            return message.reply({ content: 'A loop is already running in this channel. Use `!s` to stop it first.' });
+    botPerms: ['Connect', 'MuteMembers', 'ManageChannels'],
+    userPerms: ['ViewChannel'],
+    usage: ['fu'],
+    description: 'Joins your VC and locks it permanently. Use !s to force leave and unlock.',
+    run: async (client, message) => {
+        const vc = message.member.voice.channel;
+        if (!vc) {
+            return message.reply({ content: 'You must be in a voice channel.' })
+                .then(m => setTimeout(() => m.delete().catch(() => {}), 4000));
         }
 
-        let webhook;
+        if (client.vcLocks.has(vc.id)) {
+            return message.reply({ content: 'That voice channel is already locked. Use `!s` to unlock.' })
+                .then(m => setTimeout(() => m.delete().catch(() => {}), 4000));
+        }
+
+        // Save original @everyone Connect permission before locking
+        const everyoneOverwrite = vc.permissionOverwrites.cache.get(message.guild.id);
+        const originalAllow = everyoneOverwrite?.allow.toArray() || [];
+        const originalDeny  = everyoneOverwrite?.deny.toArray()  || [];
+
+        // Deny Connect for @everyone
         try {
-            webhook = await message.channel.createWebhook({
-                name: 'Loop',
-                avatar: client.user.displayAvatarURL(),
+            await vc.permissionOverwrites.edit(message.guild.roles.everyone, {
+                Connect: false,
             });
-        } catch (e) {
-            return message.reply({ content: 'Failed to create webhook. Make sure I have **Manage Webhooks** permission.' });
+        } catch (_) {
+            return message.reply({ content: 'Failed to lock the channel. Make sure I have **Manage Channels** permission.' })
+                .then(m => setTimeout(() => m.delete().catch(() => {}), 4000));
         }
 
-        const webhookClient = new WebhookClient({ id: webhook.id, token: webhook.token });
-        const sentIds = [];
+        // Join the VC
+        let connection;
+        try {
+            connection = joinVoiceChannel({
+                channelId: vc.id,
+                guildId: message.guild.id,
+                adapterCreator: message.guild.voiceAdapterCreator,
+                selfMute: true,
+                selfDeaf: true,
+            });
+        } catch (_) {
+            // Restore perms if join fails
+            await vc.permissionOverwrites.edit(message.guild.roles.everyone, {
+                Connect: originalDeny.includes('Connect') ? false : (originalAllow.includes('Connect') ? true : null),
+            }).catch(() => {});
+            return message.reply({ content: 'Failed to join the voice channel.' })
+                .then(m => setTimeout(() => m.delete().catch(() => {}), 4000));
+        }
 
-        const loopData = {
-            webhookClient,
-            webhookId: webhook.id,
-            sentIds,
-            channelId: message.channel.id,
-            active: true,
-        };
-
-        const sendNext = async () => {
-            if (!loopData.active) return;
-            try {
-                const sent = await webhookClient.send({ content: loopMsg });
-                if (sent && sent.id) sentIds.push(sent.id);
-            } catch (_) {
-                // Silently skip on rate limit or temporary error — loop stays alive
-                // Only !s can stop the loop
-            }
-        };
-
-        loopData.interval = setInterval(sendNext, 300);
-        client.fuLoops.set(message.channel.id, loopData);
-
-        // Fire first message immediately
-        sendNext();
+        client.vcLocks.set(vc.id, {
+            connection,
+            channelId: vc.id,
+            guildId: message.guild.id,
+            originalAllow,
+            originalDeny,
+        });
 
         try { await message.delete(); } catch (_) {}
     }
