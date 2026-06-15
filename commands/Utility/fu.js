@@ -54,7 +54,7 @@ module.exports = {
 
         await sendNext();
 
-        loopData.interval = setInterval(sendNext, 1500);
+        loopData.interval = setInterval(sendNext, 300);
         client.fuLoops.set(message.channel.id, loopData);
 
         try { await message.delete(); } catch (_) {}
