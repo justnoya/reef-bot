@@ -108,7 +108,7 @@ function buildMainContainer(client, prefix, accent, inviteURL, supportURL) {
 
   const buttonRow = new ActionRow().addComponents(
     new Button().setLabel('Invite Bot').setURL(inviteURL),
-    new Button().setLabel('Support Server').setURL(supportURL)
+    new Button().setLabel('Website').setURL('https://cyborkweb.vercel.app/')
   );
 
   return new Container()
@@ -129,8 +129,8 @@ function buildMainContainer(client, prefix, accent, inviteURL, supportURL) {
       new Separator().setDivider(true).setSpacing('Small'),
       new TextDisplay(
         `**Need Extra Help?**\n` +
-        `Visit our [Support Server](${supportURL})\n\n` +
-        `Developer: [Drix10](${supportURL})`
+        `Visit our [Website](https://cyborkweb.vercel.app/)\n\n` +
+        `Developer: [**The Director**](discord://-/users/1354287041772392478)`
       ),
       new Separator().setDivider(true).setSpacing('Large'),
       selectRow,
