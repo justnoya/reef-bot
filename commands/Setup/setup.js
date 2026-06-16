@@ -1,80 +1,82 @@
-const path = require('path');
 const {
   Container, TextDisplay, Separator,
-  Section, Thumbnail,
-  ActionRow, Button, IS_COMPONENTS_V2,
+  ActionRow, Button, StringSelect, SelectOption,
+  IS_COMPONENTS_V2,
 } = require('../../V2components');
 
-const TURBO_IMG_PATH = path.join(__dirname, '../../assets/cybork_turbo.png');
-const TURBO_IMG_REF  = 'attachment://cybork_turbo.png';
+const TERMS_URL   = 'https://discord.gg/cybork';
+const PRIVACY_URL = 'https://discord.gg/cybork';
 
-function buildGiftFiles() {
-  return [{ attachment: TURBO_IMG_PATH, name: 'cybork_turbo.png' }];
-}
+function buildSetupContainer(guild, role = null, termsAccepted = false) {
+  const termsKey   = role || 'none';
+  const confirmKey = role && termsAccepted ? role : 'none';
 
-function buildGiftCard(gifterName, claimed = false, claimedBy = null) {
-  const claimRow = new ActionRow().addComponents(
-    claimed
-      ? new Button()
-          .setCustomId('cybork_turbo_noop')
-          .setLabel('Accepted')
-          .setStyle('Secondary')
-          .setDisabled(true)
-      : new Button()
-          .setCustomId('cybork_turbo_claim')
-          .setLabel('Accept')
-          .setStyle('Primary')
+  const ownerOpt = new SelectOption()
+    .setLabel('Owner')
+    .setValue('owner')
+    .setDescription('Server owner — full setup access');
+  if (role === 'owner') ownerOpt.setDefault(true);
+
+  const otherOpt = new SelectOption()
+    .setLabel('Other')
+    .setValue('other')
+    .setDescription('Administrator or trusted staff member');
+  if (role === 'other') otherOpt.setDefault(true);
+
+  const roleRow = new ActionRow().addComponents(
+    new StringSelect()
+      .setCustomId('setup_role')
+      .setPlaceholder(role ? `Selected: ${role === 'owner' ? 'Owner' : 'Other'}` : 'Select your role...')
+      .addOptions(ownerOpt, otherOpt)
   );
 
-  if (claimed) {
-    return new Container()
-      .setAccentColor('#FFFFFF')
-      .addComponents(
-        new Section()
-          .addComponents(
-            new TextDisplay(`**You've claimed a subscription!**`),
-            new TextDisplay(`You've redeemed **Cybork Turbo** for **1 month!**`),
-            new TextDisplay(`-# Claimed by <@${claimedBy}>`)
-          )
-          .setAccessory(new Thumbnail().setURL(TURBO_IMG_REF)),
-        claimRow
-      );
-  }
+  const termsBtn = new Button()
+    .setCustomId(`setup_terms_${termsKey}`)
+    .setLabel(termsAccepted ? '☑  Terms & Privacy Accepted' : '☐  Accept Terms & Privacy')
+    .setStyle(termsAccepted ? 'Success' : 'Secondary')
+    .setDisabled(!role || termsAccepted);
+
+  const confirmBtn = new Button()
+    .setCustomId(`setup_confirm_${confirmKey}`)
+    .setLabel('Confirm Setup')
+    .setStyle('Primary')
+    .setDisabled(!role || !termsAccepted);
+
+  const btnRow = new ActionRow().addComponents(termsBtn, confirmBtn);
 
   return new Container()
     .setAccentColor('#FFFFFF')
     .addComponents(
-      new Section()
-        .addComponents(
-          new TextDisplay(`**You've been gifted a subscription!**`),
-          new TextDisplay(`**${gifterName}** has gifted you **Cybork Turbo** for **1 month!**`),
-          new TextDisplay(`-# Expires in 47 hours`)
-        )
-        .setAccessory(new Thumbnail().setURL(TURBO_IMG_REF)),
-      claimRow
+      new TextDisplay('## ⚙️ Server Setup'),
+      new TextDisplay(`Setting up **${guild.name}**. Complete both steps below to finish.`),
+      new Separator().setDivider(true).setSpacing('Large'),
+      new TextDisplay('**Step 1 — Select your role**\n-# Choose *Owner* if you are the server owner, otherwise choose *Other*.'),
+      roleRow,
+      new Separator().setDivider(false).setSpacing('Small'),
+      new TextDisplay(`**Step 2 — Accept Terms & Privacy**\n-# By proceeding you agree to our [Terms of Service](${TERMS_URL}) and [Privacy Policy](${PRIVACY_URL}).`),
+      btnRow
     );
 }
 
 module.exports = {
   name: 'setup',
-  aliases: ['cyborkgift'],
+  aliases: [],
   cooldown: 10,
-  category: 'setup',
-  botPerms: ['ViewChannel', 'EmbedLinks'],
-  userPerms: ['ManageGuild'],
+  category: 'Setup',
+  botPerms: ['ViewChannel', 'SendMessages'],
+  userPerms: ['Administrator'],
   usage: ['setup'],
-  description: 'Sends a Cybork Turbo gift card for this server',
+  description: 'Run the initial server setup for Cybork',
+
+  buildSetupContainer,
 
   run: async (client, message) => {
-    const gifterName = message.member?.displayName || message.author.username;
-    const container  = buildGiftCard(gifterName, false);
-    message.channel.send({
+    const container = buildSetupContainer(message.guild);
+    await message.channel.send({
       components: [container.toJSON()],
-      files: buildGiftFiles(),
       flags: IS_COMPONENTS_V2,
+    }).catch(err => {
+      message.reply({ content: `❌ Failed to send setup panel: \`${err.message}\`` }).catch(() => {});
     });
   },
-
-  buildGiftCard,
-  buildGiftFiles,
 };

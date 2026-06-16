@@ -66,6 +66,25 @@ module.exports.run = async (client, interaction) => {
       return;
     }
 
+    // ── Setup: role dropdown ─────────────────────────────────────────────────
+    if (customId === 'setup_role') {
+      const { buildSetupContainer } = require('../commands/Setup/setup');
+      const selected = interaction.values[0];
+
+      if (selected === 'owner' && interaction.guild.ownerId !== interaction.user.id) {
+        return interaction.reply({
+          content: '❌ Only the **server owner** can select the *Owner* role.',
+          ephemeral: true,
+        }).catch(() => {});
+      }
+
+      const container = buildSetupContainer(interaction.guild, selected, false);
+      return interaction.update({
+        components: [container.toJSON()],
+        flags: IS_COMPONENTS_V2,
+      }).catch(() => {});
+    }
+
     // ── Help select menu ─────────────────────────────────────────────────────
     if (customId === 'helpop') {
       const value = interaction.values[0];
@@ -140,6 +159,52 @@ module.exports.run = async (client, interaction) => {
       return;
     }
 
+    // ── Setup: accept terms ───────────────────────────────────────────────────
+    if (customId.startsWith('setup_terms_')) {
+      const { buildSetupContainer } = require('../commands/Setup/setup');
+      const role = customId.replace('setup_terms_', '');
+      if (role === 'none') return interaction.deferUpdate().catch(() => {});
+
+      const container = buildSetupContainer(interaction.guild, role, true);
+      return interaction.update({
+        components: [container.toJSON()],
+        flags: IS_COMPONENTS_V2,
+      }).catch(() => {});
+    }
+
+    // ── Setup: confirm ────────────────────────────────────────────────────────
+    if (customId.startsWith('setup_confirm_')) {
+      const { buildSetupContainer } = require('../commands/Setup/setup');
+      const role = customId.replace('setup_confirm_', '');
+      if (role === 'none') return interaction.deferUpdate().catch(() => {});
+
+      await interaction.deferUpdate().catch(() => {});
+
+      await client.db.set(`setup_guild_${interaction.guild.id}`, {
+        guildId:   interaction.guild.id,
+        guildName: interaction.guild.name,
+        ownerId:   interaction.guild.ownerId,
+        setupBy:   interaction.user.id,
+        setupRole: role,
+        setupAt:   Date.now(),
+      });
+
+      const { Container, TextDisplay, Separator } = require('../V2components');
+      const success = new Container()
+        .setAccentColor('#00c26f')
+        .addComponents(
+          new TextDisplay('## ✅ Setup Complete!'),
+          new Separator().setDivider(true).setSpacing('Small'),
+          new TextDisplay(`**${interaction.guild.name}** has been successfully configured.`),
+          new TextDisplay(`-# Role: **${role === 'owner' ? 'Owner' : 'Other'}** · Set up by <@${interaction.user.id}>`)
+        );
+
+      return interaction.editReply({
+        components: [success.toJSON()],
+        flags: IS_COMPONENTS_V2,
+      }).catch(() => {});
+    }
+
     // ── Help: Back button ────────────────────────────────────────────────────
     if (customId === 'helpback') {
       const inviteURL  = `https://discord.com/oauth2/authorize?client_id=${client.user.id}&permissions=8&scope=applications.commands%20bot`;
@@ -172,7 +237,7 @@ module.exports.run = async (client, interaction) => {
 
     // ── Cybork Turbo gift: Claim ──────────────────────────────────────────────
     if (customId === 'cybork_turbo_claim') {
-      const { buildGiftCard, buildGiftFiles, IS_COMPONENTS_V2: CV2 } = require('../commands/Setup/setup');
+      const { buildGiftCard, buildGiftFiles, IS_COMPONENTS_V2: CV2 } = require('../commands/Owner/turbogift');
       const claimed = buildGiftCard(null, true, interaction.user.id);
       return interaction.update({
         components: [claimed.toJSON()],
