@@ -170,6 +170,20 @@ module.exports.run = async (client, interaction) => {
       return interaction.deferUpdate().catch(() => {});
     }
 
+    // ── Cybork Turbo gift: Claim ──────────────────────────────────────────────
+    if (customId === 'cybork_turbo_claim') {
+      const { buildGiftCard, IS_COMPONENTS_V2: CV2 } = require('../commands/Setup/setup');
+      const congratsContainer = buildGiftCard(client, interaction.guild, true, interaction.user.id);
+      return interaction.update({
+        components: [congratsContainer.toJSON()],
+        flags: CV2,
+      }).catch(() => {});
+    }
+
+    if (customId === 'cybork_turbo_noop') {
+      return interaction.deferUpdate().catch(() => {});
+    }
+
     // ── Delete button ─────────────────────────────────────────────────────────
     if (customId === 'DELETE_BUT') {
       const em = new EmbedBuilder().setDescription('Only Bot Owner Can Use This Button').setColor('#ff0000');
