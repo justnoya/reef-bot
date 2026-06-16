@@ -20,8 +20,6 @@ module.exports.run = async (client, interaction) => {
 
   const accent = '#FFFFFF';
 
-  const accentInt = accent ? parseInt(accent.replace('#', ''), 16) : 0x2f3136;
-
   // ── Help: select menu ────────────────────────────────────────────────────────
   if (interaction.isStringSelectMenu?.() || interaction.isSelectMenu?.()) {
     const customId = interaction.customId;

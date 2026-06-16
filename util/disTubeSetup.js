@@ -44,9 +44,10 @@ function setupDisTube(client) {
 
   distube.on('finish', async (queue) => {
     if (queue._playerMsg) {
-      await queue._playerMsg.edit({ content: '✅ Queue finished.', components: [], flags: 0 }).catch(() => {});
+      await queue._playerMsg.delete().catch(() => {});
       queue._playerMsg = null;
     }
+    queue.textChannel?.send({ content: '✅ Queue finished.' }).catch(() => {});
   });
 
   distube.on('empty', (queue) => {
