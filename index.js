@@ -30,7 +30,6 @@ const client = new discord.Client({
     GatewayIntentBits.GuildMembers,
     GatewayIntentBits.GuildBans,
   ],
-  ws: { properties: { browser: "Discord Android" } }
 });
 
 client.config       = require("./config.json");

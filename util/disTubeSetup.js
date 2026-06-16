@@ -10,6 +10,9 @@ function setupDisTube(client) {
     emptyCooldown: 25,
     leaveOnFinish: false,
     leaveOnStop: true,
+    savePreviousSongs: true,
+    emitAddSongWhenCreatingQueue: false,
+    emitAddListWhenCreatingQueue: false,
     ytdlOptions: {
       quality: 'highestaudio',
       highWaterMark: 1 << 25,
@@ -40,7 +43,6 @@ function setupDisTube(client) {
   });
 
   distube.on('addSong', (queue, song) => {
-    if (queue.songs.length <= 1) return;
     queue.textChannel?.send({
       content: `➕ **${song.name}** added to queue — position \`#${queue.songs.length}\``,
     }).catch(() => {});
