@@ -32,7 +32,7 @@ module.exports.run = async (client, interaction) => {
       await interaction.deferUpdate();
 
       if (value === 'stop') {
-        await client.distube.stop(interaction.guild.id).catch(() => {});
+        try { await client.distube.stop(interaction.guild.id); } catch (_) {}
         return interaction.editReply({ content: '⏹ Stopped and disconnected.', components: [], flags: 0 }).catch(() => {});
       }
 
@@ -52,7 +52,7 @@ module.exports.run = async (client, interaction) => {
         reply = `🔂 Loop Song **${mode === 1 ? 'ON' : 'OFF'}**`;
       }
       if (value === 'smart_shuffle') {
-        await client.distube.shuffle(interaction.guild.id).catch(() => {});
+        try { await client.distube.shuffle(interaction.guild.id); } catch (_) {}
         reply = '🔀 Queue shuffled!';
       }
       if (value === 'add_songs') { reply = `➕ Use \`${prefix}play <song>\` to add more songs to the queue!`; }
@@ -133,7 +133,7 @@ module.exports.run = async (client, interaction) => {
       }
 
       if (customId === 'music_stop') {
-        await client.distube.stop(interaction.guild.id).catch(() => {});
+        try { await client.distube.stop(interaction.guild.id); } catch (_) {}
         return interaction.editReply({ content: '⏹ Stopped and disconnected.', components: [], flags: 0 }).catch(() => {});
       }
 

@@ -1,5 +1,8 @@
 const { DisTube } = require('distube');
+const ytdl = require('@distube/ytdl-core');
 const { buildPlayerContainer, IS_COMPONENTS_V2 } = require('./musicPlayerUI');
+
+const agent = ytdl.createAgent();
 
 function setupDisTube(client) {
   const distube = new DisTube(client, {
@@ -10,6 +13,13 @@ function setupDisTube(client) {
     ytdlOptions: {
       quality: 'highestaudio',
       highWaterMark: 1 << 25,
+      agent,
+      requestOptions: {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+          'Accept-Language': 'en-US,en;q=0.9',
+        },
+      },
     },
   });
 
