@@ -18,7 +18,7 @@ module.exports.run = async (client, guild) => {
     const embed = new EmbedBuilder()
       .setTitle(guild.name)
       .setThumbnail(guild.iconURL({ dynamic: true, size: 1024 }))
-      .setColor(client.config.embedColor)
+      .setColor('#FFFFFF')
       .setDescription(
         `**ID:** ${guild.id}\n` +
         `**Name:** ${guild.name}\n` +

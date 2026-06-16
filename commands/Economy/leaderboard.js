@@ -10,18 +10,17 @@ module.exports = {
   cooldown: 5,
 
   run: async (client, message, args, prefix) => {
-    const color = message.guild.members.me.displayHexColor !== '#000000'
-      ? message.guild.members.me.displayHexColor : client.config.embedColor;
+    const color = '#FFFFFF';
 
     const data = await cs.globalLeaderboard();
 
     if (!data || data.length < 1) {
       return message.reply({
-        embeds: [new EmbedBuilder().setColor(color).setDescription("Nobody's on the leaderboard yet.")]
+        embeds: [new EmbedBuilder().setColor('#FFFFFF').setDescription("Nobody's on the leaderboard yet.")]
       });
     }
 
-    const msg = new EmbedBuilder().setColor(color).setTitle('🏆 Global Leaderboard');
+    const msg = new EmbedBuilder().setColor('#FFFFFF').setTitle('🏆 Global Leaderboard');
     const fields = [];
     let pos = 0;
 
@@ -37,7 +36,7 @@ module.exports = {
     }
 
     if (!fields.length) {
-      return message.reply({ embeds: [new EmbedBuilder().setColor(color).setDescription("Nobody's in the leaderboard yet.")] });
+      return message.reply({ embeds: [new EmbedBuilder().setColor('#FFFFFF').setDescription("Nobody's in the leaderboard yet.")] });
     }
 
     msg.addFields(fields);

@@ -10,8 +10,7 @@ module.exports = {
   description: "View all warnings for a member",
   usage: ['warnings @user'],
   run: async (client, message, args) => {
-    const accent = message.guild.members.me.displayHexColor !== '#000000'
-      ? message.guild.members.me.displayHexColor : client.config.embedColor;
+    const accent = '#FFFFFF';
 
     const target = message.mentions.users.first() || client.users.cache.get(args[0]) || message.author;
     const warns  = await client.db.get(`warns_${message.guild.id}_${target.id}`) || [];

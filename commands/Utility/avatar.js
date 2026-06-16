@@ -16,7 +16,7 @@ if(message.guild.members.cache.get(member.id)){
  
     const embed = new EmbedBuilder()
     .setImage(member.displayAvatarURL({ dynamic: true, size: 2048 }))  
-    .setColor(client.config.embedColor)
+    .setColor('#FFFFFF')
    
     .setDescription(`[\`PNG\`](${member.displayAvatarURL({ dynamic: true, size: 2048, format: "png" })}) | [\`JPG\`](${member.displayAvatarURL({ dynamic: true, size: 2048, format: "jpg" })}) | [\`WEBP\`](${member.displayAvatarURL({ dynamic: true, size: 2048, format: "webp" })}) `);
 
@@ -27,7 +27,7 @@ if(message.guild.members.cache.get(member.id)){
   
   const embed = new EmbedBuilder()
   .setImage(member.avatarURL({ dynamic: true, size: 2048 }))    
-    .setColor(client.config.embedColor)
+    .setColor('#FFFFFF')
     
       .setDescription(`[\`PNG\`](${member.avatarURL({ dynamic: true, size: 2048, format: "png" })}) | [\`JPG\`](${member.avatarURL({ dynamic: true, size: 2048, format: "jpg" })}) | [\`WEBP\`](${member.avatarURL({ dynamic: true, size: 2048, format: "webp" })}) `);
   

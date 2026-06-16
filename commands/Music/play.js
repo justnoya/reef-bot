@@ -26,9 +26,7 @@ module.exports = {
       return message.reply({ content: '❌ I need **Connect** and **Speak** permissions in your voice channel!' });
     }
 
-    const accent = message.guild.members.me.displayHexColor !== '#000000'
-      ? parseInt(message.guild.members.me.displayHexColor.replace('#', ''), 16)
-      : 0x2f3136;
+    const accent = 0xFFFFFF;
 
     const loadingMsg = await message.reply({ content: '🔍 Searching...' });
 

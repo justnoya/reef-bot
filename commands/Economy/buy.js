@@ -24,10 +24,9 @@ module.exports = {
   cooldown: 5,
 
   run: async (client, message, args, prefix) => {
-    const color = message.guild.members.me.displayHexColor !== '#000000'
-      ? message.guild.members.me.displayHexColor : client.config.embedColor;
+    const color = '#FFFFFF';
 
-    const embed = new EmbedBuilder().setColor(color);
+    const embed = new EmbedBuilder().setColor('#FFFFFF');
     const itemNum = parseInt(args[0]);
     const amount = parseInt(args[1]) || 1;
 

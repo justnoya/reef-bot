@@ -30,9 +30,7 @@ module.exports = {
     const give = new EmbedBuilder()
 
       .setColor(
-        message.guild.members.me.displayHexColor !== "#000000"
-          ? message.guild.members.me.displayHexColor
-          : client.config.embedColor
+        '#FFFFFF'
       )
 
       .setDescription(`<:11:1052589045374533653> Enter A Valid Amount`);
@@ -42,9 +40,7 @@ module.exports = {
     const crs = new EmbedBuilder()
 
       .setColor(
-        message.guild.members.me.displayHexColor !== "#000000"
-          ? message.guild.members.me.displayHexColor
-          : client.config.embedColor
+        '#FFFFFF'
       )
 
       .setDescription(`💰 You need some money to withdraw `);
@@ -56,9 +52,7 @@ module.exports = {
     const success = new EmbedBuilder()
 
       .setColor(
-        message.guild.members.me.displayHexColor !== "#000000"
-          ? message.guild.members.me.displayHexColor
-          : client.config.embedColor
+        '#FFFFFF'
       )
 
       .setDescription(

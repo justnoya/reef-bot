@@ -19,9 +19,7 @@ module.exports.run = async (client, interaction) => {
   let prefix = await client.db.get(`prefix_${interaction.guild?.id}`);
   if (prefix === null) prefix = client.prefix;
 
-  const accent = interaction.guild?.members?.me?.displayHexColor !== '#000000'
-    ? interaction.guild?.members?.me?.displayHexColor
-    : client.config.embedColor;
+  const accent = '#FFFFFF';
 
   const accentInt = accent ? parseInt(accent.replace('#', ''), 16) : 0x2f3136;
 

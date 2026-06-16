@@ -16,7 +16,7 @@ module.exports = {
       let data = guild.iconURL()
       if(data){
         return message.reply({embeds: [new EmbedBuilder()
-            .setColor(client.config.embedColor)
+            .setColor('#FFFFFF')
           .setTitle(`${guild.name}'s Avatar`)
           .setImage(guild.iconURL({dynamic: true}))          
           .setTimestamp()
@@ -24,7 +24,7 @@ module.exports = {
       }else
       {
         return message.reply({embeds: [new EmbedBuilder()
-          .setColor(client.config.embedColor)
+          .setColor('#FFFFFF')
         .setTitle(`${guild.name}'s Avatar`)
         .setDescription(`<:11:1052589045374533653> No Avatar For This Guild`)        
         .setTimestamp()

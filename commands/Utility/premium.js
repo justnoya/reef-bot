@@ -12,7 +12,7 @@ module.exports = {
       let prefix = await client.db.get(`prefix_${message.guild.id}`);
       if (prefix === null) prefix = client.prefix;
     const embed = new EmbedBuilder()
-    .setColor(message.guild.members.me.displayHexColor !== '#000000' ? message.guild.members.me.displayHexColor : client.config.embedColor)
+    .setColor('#FFFFFF')
     const row = new ActionRowBuilder()
      .addComponents(new ButtonBuilder()
      .setLabel("Premium")

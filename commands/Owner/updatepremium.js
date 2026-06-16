@@ -18,7 +18,7 @@ module.exports = {
      return;
   };
   const embed = new EmbedBuilder()
-  .setColor("#2F3136")
+  .setColor("#FFFFFF")
   if(args[0]){
   try {
     await client.users.fetch(args[0])

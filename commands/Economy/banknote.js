@@ -11,10 +11,9 @@ module.exports = {
   cooldown: 5,
 
   run: async (client, message, args, prefix) => {
-    const color = message.guild.members.me.displayHexColor !== '#000000'
-      ? message.guild.members.me.displayHexColor : client.config.embedColor;
+    const color = '#FFFFFF';
 
-    const errus = new EmbedBuilder().setColor(color).setTitle('An Error Occurred!');
+    const errus = new EmbedBuilder().setColor('#FFFFFF').setTitle('An Error Occurred!');
 
     const arr = await cs.getUserItems({ user: message.author, guild: { id: null } });
     if (!arr.inventory.length) {
@@ -43,7 +42,7 @@ module.exports = {
 
     if (!result.error) {
       return message.reply({
-        embeds: [new EmbedBuilder().setColor(color)
+        embeds: [new EmbedBuilder().setColor('#FFFFFF')
           .setDescription(`<:10:1052589041717092412> Successfully updated bank space!\n<:ecobank:1055873821590175784> Current bank space: **${result.amount}**`)]
       });
     }

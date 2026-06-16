@@ -21,7 +21,7 @@ module.exports.run = async (client, guild) => {
     client.guilds.cache.forEach(g => { mcount += g.memberCount; });
 
     const embed = new EmbedBuilder()
-      .setColor(client.config.embedColor)
+      .setColor('#FFFFFF')
       .setDescription(
         `**ID:** ${guild.id}\n` +
         `**Name:** ${guild.name}\n` +

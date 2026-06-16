@@ -19,14 +19,14 @@ userPerms: ['ViewChannel'],
         {
             const embed = new EmbedBuilder()
             .setDescription(`<:11:1052589045374533653> Please Enter Some Text`)
-            .setColor(client.config.embedColor)
+            .setColor('#FFFFFF')
             return message.reply({embeds:[embed]})
         }
         let image = await QRCode.toBuffer(text);
         const attachment = new AttachmentBuilder(image, 'qrcode.png')
         const embed = new EmbedBuilder()
         .setAuthor({name:'Qr Code Generation',iconURL: client.user.displayAvatarURL()})
-        .setColor(client.config.embedColor)
+        .setColor('#FFFFFF')
         .setImage(`attachment://qrcode.png`)
         message.reply({
             embeds: [embed],

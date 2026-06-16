@@ -10,8 +10,7 @@ module.exports = {
   description: "Information about a role",
   usage: ['roleinfo @role'],
   run: async (client, message, args) => {
-    const accent = message.guild.members.me.displayHexColor !== '#000000'
-      ? message.guild.members.me.displayHexColor : client.config.embedColor;
+    const accent = '#FFFFFF';
 
     const role = message.mentions.roles.first() || message.guild.roles.cache.get(args[0]);
     if (!role) {

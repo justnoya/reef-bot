@@ -23,14 +23,13 @@ module.exports = {
   cooldown: 5,
 
   run: async (client, message, args, prefix) => {
-    const color = message.guild.members.me.displayHexColor !== '#000000'
-      ? message.guild.members.me.displayHexColor : client.config.embedColor;
+    const color = '#FFFFFF';
 
     const user = message.mentions.users.first() || message.author;
     const result = await cs.getUserItems({ user, guild: { id: null } });
     const inv = result.inventory.slice(0, 10);
 
-    const embed = new EmbedBuilder().setColor(color);
+    const embed = new EmbedBuilder().setColor('#FFFFFF');
 
     if (!inv.length) {
       embed.setDescription('<:backpack:1056172618379694090> Your inventory is empty.');

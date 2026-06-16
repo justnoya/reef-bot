@@ -7,7 +7,7 @@ module.exports = {
   run: async (client, message, args) => {
     if (!message.member.permissions.has('ManageChannels')){
       let error = new EmbedBuilder()
-        .setColor(message.guild.members.me.displayHexColor !== '#000000' ? message.guild.members.me.displayHexColor : client.config.embedColor)
+        .setColor('#FFFFFF')
         .setDescription(`You must have \`Manage Channels\` permission to use this command.`)
       return message.reply({embeds: [error]});
     }
@@ -17,7 +17,7 @@ module.exports = {
         new ButtonBuilder().setCustomId("NO").setStyle(ButtonStyle.Danger).setLabel("No")
       );
       const embed = new EmbedBuilder()
-        .setColor(message.guild.members.me.displayHexColor !== '#000000' ? message.guild.members.me.displayHexColor : client.config.embedColor)
+        .setColor('#FFFFFF')
         .setDescription(`Are you sure that you want to nuke this channel.`)
       let msg = await message.reply({embeds: [embed], components: [row]});
       const filter = (interaction) => {
@@ -37,7 +37,7 @@ module.exports = {
         if (id === "YES") {
           message.channel.clone().then((ch) => {
             let reason = args.join(" ") || "No Reason";
-            let embed = new EmbedBuilder().setTitle("**Channel Succesfuly Nuked**").setColor(message.guild.members.me.displayHexColor !== '#000000' ? message.guild.members.me.displayHexColor : client.config.embedColor);
+            let embed = new EmbedBuilder().setTitle("**Channel Succesfuly Nuked**").setColor('#FFFFFF');
             ch.setParent(message.channel.parent);
             ch.setPosition(message.channel.position);
             message.channel.delete().then(() => {
@@ -52,7 +52,7 @@ module.exports = {
         }
       })
     }catch(err){
-      return message.channel.send({embeds: [new EmbedBuilder().setColor(message.guild.members.me.displayHexColor !== '#000000' ? message.guild.members.me.displayHexColor : client.config.embedColor).setDescription(`I was unable to nuke this channel.`)]})
+      return message.channel.send({embeds: [new EmbedBuilder().setColor('#FFFFFF').setDescription(`I was unable to nuke this channel.`)]})
     }
   }
 }

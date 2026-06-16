@@ -18,8 +18,7 @@ module.exports = {
   description: "Work to earn coins (1 hour cooldown)",
   usage: ['work'],
   run: async (client, message) => {
-    const accent = message.guild.members.me.displayHexColor !== '#000000'
-      ? message.guild.members.me.displayHexColor : client.config.embedColor;
+    const accent = '#FFFFFF';
 
     const cdKey = `workcd_${message.author.id}`;
     const lastWork = await client.db.get(cdKey) || 0;

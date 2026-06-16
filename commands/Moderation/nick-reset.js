@@ -15,11 +15,11 @@ var botperm = message.guild.members.me.permissions.has(PermissionsBitField.Flags
 let upn = new EmbedBuilder()
    
     .setDescription(`You don\'t have permission to use this command.`)
-.setColor(message.guild.members.me.displayHexColor !== '#000000' ? message.guild.members.me.displayHexColor : client.config.embedColor)
+.setColor('#FFFFFF')
 let bpn = new EmbedBuilder()
    
     .setDescription(`I don\'t have permission to run this command.`)
-.setColor(message.guild.members.me.displayHexColor !== '#000000' ? message.guild.members.me.displayHexColor : client.config.embedColor)
+.setColor('#FFFFFF')
 
       if(!uperm)
 return message.reply({embeds:[upn]});
@@ -32,7 +32,7 @@ return message.reply({embeds:[bpn]});
 
   let nouser = new EmbedBuilder()
 .setDescription(`Member not found in guild.`)
-.setColor(message.guild.members.me.displayHexColor !== '#000000' ? message.guild.members.me.displayHexColor : client.config.embedColor)
+.setColor('#FFFFFF')
   
 
 if(!member)
@@ -44,7 +44,7 @@ if (member.id === message.author.id)
   let bruh1 = new EmbedBuilder()
    
     .setDescription(`You don\'t have permission to moderate that member.`)
-.setColor(message.guild.members.me.displayHexColor !== '#000000' ? message.guild.members.me.displayHexColor : client.config.embedColor)
+.setColor('#FFFFFF')
       if (message.member.roles.highest.position <= member.roles.highest.position && message.author.id !== message.guild.ownerId)
         return message.reply({embeds:[bruh1]})
     
@@ -52,14 +52,14 @@ if (member.id === message.author.id)
 let bruh11 = new EmbedBuilder()
      
   .setDescription(`I don\'t have permissions to moderate that member.`)
-.setColor(message.guild.members.me.displayHexColor !== '#000000' ? message.guild.members.me.displayHexColor : client.config.embedColor)
+.setColor('#FFFFFF')
   if (message.guild.members.me.roles.highest.position <= member.roles.highest.position)
      return message.reply({ embeds: [bruh11] });
 
 
 
       let nicked = new EmbedBuilder()
-     .setColor(message.guild.members.me.displayHexColor !== '#000000' ? message.guild.members.me.displayHexColor : client.config.embedColor)
+     .setColor('#FFFFFF')
 .setDescription(`\`${member.user.tag}\'s\` nickname has been reset.`)
 
         return (

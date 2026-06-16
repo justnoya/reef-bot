@@ -13,9 +13,7 @@ module.exports = {
   cooldown: 5,
 
   run: async (client, message, args, prefix) => {
-    const color = message.guild.members.me.displayHexColor !== "#000000"
-      ? message.guild.members.me.displayHexColor
-      : client.config.embedColor;
+    const color = '#FFFFFF';
 
     const user = message.mentions.users.first();
     const sender = message.author;

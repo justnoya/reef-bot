@@ -9,8 +9,7 @@ module.exports = {
   usage: ["profile", "profile @user"],
   owner: false,
   run: async (client, message, args) => {
-    const accent = message.guild.members.me.displayHexColor !== '#000000'
-      ? message.guild.members.me.displayHexColor : client.config.embedColor;
+    const accent = '#FFFFFF';
 
     let user = message.mentions.users.first() || client.users.cache.get(args[0]) || message.author;
     if (user.id === client.user.id) user = message.author;

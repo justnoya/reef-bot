@@ -9,8 +9,7 @@ module.exports = {
   userPerms: ['ViewChannel'],
   description: "Detailed information about this server",
   run: async (client, message) => {
-    const accent = message.guild.members.me.displayHexColor !== '#000000'
-      ? message.guild.members.me.displayHexColor : client.config.embedColor;
+    const accent = '#FFFFFF';
     const guild = message.guild;
     try { await guild.members.fetch(); } catch (_) {}
 

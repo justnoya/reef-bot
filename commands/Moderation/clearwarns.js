@@ -11,8 +11,7 @@ module.exports = {
   usage: ['clearwarns @user'],
   args: true,
   run: async (client, message, args) => {
-    const accent = message.guild.members.me.displayHexColor !== '#000000'
-      ? message.guild.members.me.displayHexColor : client.config.embedColor;
+    const accent = '#FFFFFF';
 
     const target = message.mentions.users.first() || client.users.cache.get(args[0]);
     if (!target) return message.channel.send({

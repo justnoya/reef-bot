@@ -21,9 +21,7 @@ module.exports = {
     let net = Math.floor(result.bank + result.wallet);
     const ems = new EmbedBuilder()
       .setColor(
-        message.guild.members.me.displayHexColor !== "#000000"
-          ? message.guild.members.me.displayHexColor
-          : client.config.embedColor
+        '#FFFFFF'
       )
       .setTitle(`${user.tag}'s Bank Information`)
 

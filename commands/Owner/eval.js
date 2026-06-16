@@ -8,12 +8,10 @@ module.exports = {
   owner: true,
 
   run: async (client, message, args) => {
-    const color = message.guild.members.me.displayHexColor !== "#000000"
-      ? message.guild.members.me.displayHexColor
-      : client.config.embedColor;
+    const color = '#FFFFFF';
 
     const nembed = new EmbedBuilder()
-      .setColor(color)
+      .setColor('#FFFFFF')
       .setDescription("<:11:1052589045374533653> Only bot owners can run this command.")
       .setFooter({ text: message.author.tag });
 

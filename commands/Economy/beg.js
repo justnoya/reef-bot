@@ -10,8 +10,7 @@ module.exports = {
   cooldown: 5,
 
   run: async (client, message, args, prefix) => {
-    const color = message.guild.members.me.displayHexColor !== '#000000'
-      ? message.guild.members.me.displayHexColor : client.config.embedColor;
+    const color = '#FFFFFF';
 
     const result = await cs.beg({
       user: message.author,
@@ -23,13 +22,13 @@ module.exports = {
 
     if (result.error) {
       return message.reply({
-        embeds: [new EmbedBuilder().setColor(color)
+        embeds: [new EmbedBuilder().setColor('#FFFFFF')
           .setDescription(`You have begged recently. Try again in **${result.time}**`)]
       });
     }
 
     return message.reply({
-      embeds: [new EmbedBuilder().setColor(color)
+      embeds: [new EmbedBuilder().setColor('#FFFFFF')
         .setDescription(`You have earned <a:bitcoin:1055862360713220237> **${result.amount}** coins.`)]
     });
   }

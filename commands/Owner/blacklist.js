@@ -10,7 +10,7 @@ module.exports = {
   run: async (client, message, args) => {
      
       const embed= new EmbedBuilder();
-      embed.setColor(message.guild.members.me.displayHexColor !== '#000000' ? message.guild.members.me.displayHexColor : client.config.embedColor);
+      embed.setColor('#FFFFFF');
  const row = new ActionRowBuilder()
            .addComponents(new ButtonBuilder()
     .setEmoji(`993492852023762965`)
@@ -21,7 +21,7 @@ module.exports = {
 
       const em1 = new EmbedBuilder();
       const nembed = new EmbedBuilder()
-      .setColor(`${client.config.embedColor}`)
+      .setColor(`${'#FFFFFF'}`)
       .setDescription(`<:11:1052589045374533653> You are not allowed to run this command! Only the Owners are allowed to run this command!`)            
       .setFooter({text:message.author.tag})
   

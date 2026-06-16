@@ -32,7 +32,7 @@ if(!data) {
 const xddn = new EmbedBuilder()
 .setTitle('Welcomer Settings')
 .setDescription(`**Welcomer:**\n\`${hahaXd}\`\n\n**Channel:**\n${channel}\n\n Embed Description:\`${mes}\``)
-.setColor(message.guild.members.me.displayHexColor !== '#000000' ? message.guild.members.me.displayHexColor : client.config.embedColor)
+.setColor('#FFFFFF')
 .setTimestamp()
 .setThumbnail(client.user.displayAvatarURL())
 message.reply({embeds:[xddn]})

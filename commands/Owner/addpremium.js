@@ -18,7 +18,7 @@ module.exports = {
   };
   let arr = [];
   const embed = new EmbedBuilder()
-  .setColor(message.guild.members.me.displayHexColor !== '#000000' ? message.guild.members.me.displayHexColor : client.config.embedColor)
+  .setColor('#FFFFFF')
   if(args[0]){
   try {
     await client.users.fetch(args[0])

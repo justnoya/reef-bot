@@ -22,7 +22,7 @@ module.exports = {
         .replaceAll('<<user.mention>>', `<@${member.user.id}>`);
 
       const botMember = guild.members.me;
-      const color = botMember?.displayHexColor !== '#000000' ? botMember?.displayHexColor : client.config.embedColor;
+      const color = '#FFFFFF';
 
       const embed = new EmbedBuilder()
         .setAuthor({
@@ -30,7 +30,7 @@ module.exports = {
           iconURL: member.user.displayAvatarURL(),
           url: `https://discord.com/oauth2/authorize?client_id=${client.user.id}&permissions=8&scope=applications.commands%20bot`
         })
-        .setColor(color)
+        .setColor('#FFFFFF')
         .setDescription(content)
         .setTimestamp();
 

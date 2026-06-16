@@ -58,7 +58,7 @@ new ButtonBuilder()
       }
     }
    await client.db.delete(`upremserver_${message.author.id}`)
-    message.author.send({embeds: [new EmbedBuilder().setColor(message.guild.members.me.displayHexColor !== '#000000' ? message.guild.members.me.displayHexColor : client.config.embedColor).setDescription(`Your Premium Has Got Expired.\nTotal **\`${scot}\`** Servers [Premium](${client.config.links.dc}) was removed.\nClick [here](${client.config.links.dc}) To Buy [Premium](${client.config.links.dc}).`)], components: [premrow]}).catch((err) => { });
+    message.author.send({embeds: [new EmbedBuilder().setColor('#FFFFFF').setDescription(`Your Premium Has Got Expired.\nTotal **\`${scot}\`** Servers [Premium](${client.config.links.dc}) was removed.\nClick [here](${client.config.links.dc}) To Buy [Premium](${client.config.links.dc}).`)], components: [premrow]}).catch((err) => { });
   }
 
   if(spremend && Date.now() >= spremend)
@@ -88,18 +88,18 @@ new ButtonBuilder()
         await client.db.delete(`spremown_${upremserver[i]}`)
       }
     try{
-    await client.users.cache.get(`${us}`).send({embeds: [new EmbedBuilder().setColor(message.guild.members.me.displayHexColor !== '#000000' ? message.guild.members.me.displayHexColor : client.config.embedColor).setDescription(`Your Premium Has Got Expired.\nTotal **\`${scount}\`** Servers [Premium](${client.config.links.dc}) was removed.\nClick [here](${client.config.links.dc}) To Buy [Premium](${client.config.links.dc}).`)], components: [premrow]}).catch((er) => { })
+    await client.users.cache.get(`${us}`).send({embeds: [new EmbedBuilder().setColor('#FFFFFF').setDescription(`Your Premium Has Got Expired.\nTotal **\`${scount}\`** Servers [Premium](${client.config.links.dc}) was removed.\nClick [here](${client.config.links.dc}) To Buy [Premium](${client.config.links.dc}).`)], components: [premrow]}).catch((er) => { })
     }catch(errors) {
       
     }
     }
     await client.db.delete(`upremserver_${us}`)
     await client.db.delete(`spremown_${message.guild.id}`)
-    message.channel.send({embeds: [new EmbedBuilder().setColor(message.guild.members.me.displayHexColor !== '#000000' ? message.guild.members.me.displayHexColor : client.config.embedColor).setDescription(`The Premium Of This Server Has Got Expired.\nClick [here](${client.config.links.dc}) To Buy [Premium](${client.config.links.dc}).`)], components: [premrow]}).catch((err) => { });
+    message.channel.send({embeds: [new EmbedBuilder().setColor('#FFFFFF').setDescription(`The Premium Of This Server Has Got Expired.\nClick [here](${client.config.links.dc}) To Buy [Premium](${client.config.links.dc}).`)], components: [premrow]}).catch((err) => { });
   
   }
   const em = new EmbedBuilder();
-  em.setColor(message.guild.members.me.displayHexColor !== '#000000' ? message.guild.members.me.displayHexColor : client.config.embedColor);
+  em.setColor('#FFFFFF');
   try {
  let prefix = await client.db.get(`prefix_${message.guild.id}`);
       if (prefix === null) prefix = client.prefix;
@@ -130,7 +130,7 @@ var m = "";
     .setURL(`https://top.gg/bot/${client.user.id}/vote`)
                         );
       const embed = new EmbedBuilder()
-        .setColor(message.guild.members.me.displayHexColor !== '#000000' ? message.guild.members.me.displayHexColor : client.config.embedColor)
+        .setColor('#FFFFFF')
         .setAuthor({name:'Settings For This Server',iconURL:client.user.displayAvatarURL() })
       
         .setDescription(`• My prefix here is \`${prefix}\` \nServer Id: \`${message.guild.id}\`\n\nType \`${prefix}help\` To Get All Commands Help Menu.`);
@@ -190,7 +190,7 @@ var m = "";
               new EmbedBuilder()
                   .setDescription(`<:11:1052589045374533653> Please wait \`${msg(message, command).toFixed(1)}\` Before using the \`${command.name}\` command again!`)
                   
-                .setColor(message.guild.members.me.displayHexColor !== '#000000' ? message.guild.members.me.displayHexColor : client.config.embedColor)
+                .setColor('#FFFFFF')
               ]
           }).then(m => setTimeout(() => m.delete(), msg(message, command) * 1000));
       } 
@@ -232,7 +232,7 @@ var m = "";
     .setURL(`https://top.gg/bot/${client.user.id}/vote`)
                         );
       em.setDescription(`You must [vote](https://top.gg/bot/${client.user.id}/vote) me to use this command. If you want to disable this then [click here](${client.config.links.dc}) to buy [premium](${client.config.links.dc}) to listen interruption free **music**!`)
-      .setColor(message.guild.members.me.displayHexColor !== '#000000' ? message.guild.members.me.displayHexColor : client.config.embedColor)
+      .setColor('#FFFFFF')
     return message.channel.send({embeds: [em], components: [row]})
     }
   } 
@@ -246,14 +246,14 @@ var m = "";
       const allowed = [...new Set([...ownerList, ...npList])];
       if (!allowed.includes(message.author.id))
         return message.channel.send({
-          embeds: [new EmbedBuilder().setColor(message.guild.members.me.displayHexColor !== '#000000' ? message.guild.members.me.displayHexColor : client.config.embedColor).setDescription('Only My Owners can use this command!')],
+          embeds: [new EmbedBuilder().setColor('#FFFFFF').setDescription('Only My Owners can use this command!')],
         });
     }
     user.count++;
     await user.save();
         
     if(user.blacklisted){
-      return message.channel.send({embeds:[new EmbedBuilder().setColor(message.guild.members.me.displayHexColor !== '#000000' ? message.guild.members.me.displayHexColor : client.config.embedColor).setDescription('You are Blacklisted From Using the Bot\nYou can Appeal For Your Blacklist At Our Support Server.')]})
+      return message.channel.send({embeds:[new EmbedBuilder().setColor('#FFFFFF').setDescription('You are Blacklisted From Using the Bot\nYou can Appeal For Your Blacklist At Our Support Server.')]})
             }
   if (command) command.run(client, message, args, prefix)
 

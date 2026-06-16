@@ -14,9 +14,7 @@ module.exports = {
     let prefix = await client.db.get(`prefix_${message.guild.id}`);
     if (prefix === null) prefix = client.prefix;
 
-    const accent     = message.guild.members.me.displayHexColor !== '#000000'
-      ? message.guild.members.me.displayHexColor
-      : client.config.embedColor;
+    const accent = '#FFFFFF';
     const inviteURL  = `https://discord.com/oauth2/authorize?client_id=${client.user.id}&permissions=8&scope=applications.commands%20bot`;
     const supportURL = client.config.links.dc;
 

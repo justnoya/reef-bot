@@ -10,14 +10,13 @@ module.exports = {
   cooldown: 5,
 
   run: async (client, message, args, prefix) => {
-    const color = message.guild.members.me.displayHexColor !== '#000000'
-      ? message.guild.members.me.displayHexColor : client.config.embedColor;
+    const color = '#FFFFFF';
 
     const user = message.author;
     const bal = await cs.balance({ user, guild: { id: null } });
 
     if (bal.bank === 0) {
-      return message.reply({ embeds: [new EmbedBuilder().setColor(color).setDescription("<:11:1052589045374533653> You don't have any money in your bank.")] });
+      return message.reply({ embeds: [new EmbedBuilder().setColor('#FFFFFF').setDescription("<:11:1052589045374533653> You don't have any money in your bank.")] });
     }
 
     const result = await cs.withdraw({ user, guild: { id: null }, amount: bal.bank });
@@ -29,11 +28,11 @@ module.exports = {
         'low-money': "<:11:1052589045374533653> You don't have that much in your bank.",
         'no-money': "<:11:1052589045374533653> You don't have money in your bank."
       };
-      return message.reply({ embeds: [new EmbedBuilder().setColor(color).setDescription(msgs[result.type] || 'Error.')] });
+      return message.reply({ embeds: [new EmbedBuilder().setColor('#FFFFFF').setDescription(msgs[result.type] || 'Error.')] });
     }
 
     return message.reply({
-      embeds: [new EmbedBuilder().setColor(color)
+      embeds: [new EmbedBuilder().setColor('#FFFFFF')
         .setDescription(`Withdrew all <a:bitcoin:1055862360713220237>**${result.amount}** from bank.\n\n**Updated Balance:**\n<a:wallet:1055761007789748275> Wallet: <a:bitcoin:1055862360713220237>${result.rawData.wallet}\n<:ecobank:1055873821590175784> Bank: <a:bitcoin:1055862360713220237>${result.rawData.bank}`)]
     });
   }

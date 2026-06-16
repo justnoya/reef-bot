@@ -16,7 +16,7 @@ userPerms: ['ViewChannel'],
 const user = message.author;
         if(!args[0]) {
             const embed = new EmbedBuilder()
-            .setColor(message.guild.members.me.displayHexColor !== '#000000' ? message.guild.members.me.displayHexColor : client.config.embedColor)
+            .setColor('#FFFFFF')
             .setDescription(`Please write the feedback message to send`)
              message.channel.send({embeds: [embed]})
 } else { 
@@ -34,7 +34,7 @@ const user = message.author;
     .setStyle("Danger")         
                          );
          const thing = new EmbedBuilder()
-         .setColor(message.guild.members.me.displayHexColor !== '#000000' ? message.guild.members.me.displayHexColor : client.config.embedColor)
+         .setColor('#FFFFFF')
         .setAuthor({name:`Hey User Thanks for Giving Feedback`})
          .setDescription(`Are you satisfied?\n<a:ThumbsUp:995665552133607434> Click on this button if you are satisfied\n<a:SC_Thumbs_Down:995665727690391582> Click on this buttons if you are not satisfied\n\nMessage you provided for feedback is: ${args[0]}`)
          .setFooter({text:`Thank you for supporting and giving feedback`})

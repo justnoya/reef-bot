@@ -16,7 +16,7 @@ module.exports = {
       let data = guild.bannerURL()
       if(data){
         return message.reply({embeds: [new EmbedBuilder()
-            .setColor(client.config.embedColor)
+            .setColor('#FFFFFF')
           .setTitle(`${guild.name}'s Banner`)
           .setDescription(`[\`PNG\`](${guild.bannerURL({format: 'png'})}) | [\`WEBP\`](${guild.bannerURL({format: 'webp'})}) | [\`JPEG\`](${guild.bannerURL({format: 'jpeg'})})`)
           .setImage(guild.bannerURL())          
@@ -26,7 +26,7 @@ module.exports = {
       if(!data)
       {
         return message.reply({embeds: [new EmbedBuilder()
-          .setColor(client.config.embedColor)
+          .setColor('#FFFFFF')
         .setTitle(`${guild.name}'s Banner`)
         .setDescription(`<:11:1052589045374533653> No Banner For This Guild`)        
         .setTimestamp()

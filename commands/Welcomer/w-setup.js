@@ -9,21 +9,19 @@ module.exports = {
   userPerms: ["Administrator"],
 
   run: async (client, message, args, prefix) => {
-    const color = message.guild.members.me.displayHexColor !== "#000000"
-      ? message.guild.members.me.displayHexColor
-      : client.config.embedColor;
+    const color = '#FFFFFF';
 
     const channelA = message.mentions.channels.first();
 
     if (!channelA) {
       return message.reply({
-        embeds: [new EmbedBuilder().setColor(color).setDescription("<:11:1052589045374533653> Please mention a text channel.")]
+        embeds: [new EmbedBuilder().setColor('#FFFFFF').setDescription("<:11:1052589045374533653> Please mention a text channel.")]
       });
     }
 
     if (!channelA.isTextBased()) {
       return message.reply({
-        embeds: [new EmbedBuilder().setColor(color).setDescription("<:11:1052589045374533653> That's not a text channel.")]
+        embeds: [new EmbedBuilder().setColor('#FFFFFF').setDescription("<:11:1052589045374533653> That's not a text channel.")]
       });
     }
 
@@ -37,7 +35,7 @@ module.exports = {
     }
 
     return message.reply({
-      embeds: [new EmbedBuilder().setColor(color).setDescription(`<:10:1052589041717092412> Welcomer is now enabled in <#${channelA.id}>.`)]
+      embeds: [new EmbedBuilder().setColor('#FFFFFF').setDescription(`<:10:1052589041717092412> Welcomer is now enabled in <#${channelA.id}>.`)]
     });
   }
 };

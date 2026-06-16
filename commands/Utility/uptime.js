@@ -12,8 +12,7 @@ module.exports = {
   botPerms: ['ViewChannel'],
   userPerms: ['ViewChannel'],
   run: async (client, message) => {
-    const accent = message.guild.members.me.displayHexColor !== '#000000'
-      ? message.guild.members.me.displayHexColor : client.config.embedColor;
+    const accent = '#FFFFFF';
     const d = Math.round((Date.now() - client.uptime) / 1000);
 
     const container = new Container()

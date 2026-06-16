@@ -12,8 +12,7 @@ module.exports = {
   usage: ['pay @user <amount>'],
   args: true,
   run: async (client, message, args) => {
-    const accent = message.guild.members.me.displayHexColor !== '#000000'
-      ? message.guild.members.me.displayHexColor : client.config.embedColor;
+    const accent = '#FFFFFF';
 
     const err = (text) => message.channel.send({
       components: [new Container().setAccentColor('#ff0000').addComponents(new TextDisplay(`❌ ${text}`)).toJSON()],

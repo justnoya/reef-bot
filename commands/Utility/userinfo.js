@@ -10,8 +10,7 @@ module.exports = {
   description: "Detailed information about a user",
   usage: ['userinfo', 'userinfo @user'],
   run: async (client, message, args) => {
-    const accent = message.guild.members.me.displayHexColor !== '#000000'
-      ? message.guild.members.me.displayHexColor : client.config.embedColor;
+    const accent = '#FFFFFF';
 
     const user   = message.mentions.users.first() || client.users.cache.get(args[0]) || message.author;
     const member = message.guild.members.cache.get(user.id);

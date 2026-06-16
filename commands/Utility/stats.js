@@ -11,8 +11,7 @@ module.exports = {
   description: "Stats and information about the bot",
   aliases: ['stats', 'bi', 'botinfo'],
   run: async (client, message) => {
-    const accent = message.guild.members.me.displayHexColor !== '#000000'
-      ? message.guild.members.me.displayHexColor : client.config.embedColor;
+    const accent = '#FFFFFF';
 
     let users = 0;
     client.guilds.cache.forEach(g => { users += g.memberCount; });

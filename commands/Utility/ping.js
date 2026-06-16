@@ -10,8 +10,7 @@ module.exports = {
   usage: ['ping'],
   description: "Shows the bot's latency",
   run: async (client, message) => {
-    const accent = message.guild.members.me.displayHexColor !== '#000000'
-      ? message.guild.members.me.displayHexColor : client.config.embedColor;
+    const accent = '#FFFFFF';
 
     const before = Date.now();
     const tmp = await message.channel.send({ content: '\u200b' });

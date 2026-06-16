@@ -16,7 +16,7 @@ module.exports = {
   
 let lolXd = new EmbedBuilder()
 .setDescription(`<:11:1052589045374533653> Welcomer is already disabled.`)
-.setColor(message.guild.members.me.displayHexColor !== '#000000' ? message.guild.members.me.displayHexColor : client.config.embedColor)
+.setColor('#FFFFFF')
 
 if(!data) {
 return message.reply({embeds:[lolXd]});
@@ -30,7 +30,7 @@ return message.reply({embeds:[lolXd]});
   
       const embed = new EmbedBuilder()
         .setAuthor({ name: message.author.tag, iconURL: message.author.displayAvatarURL(), url: `https://discord.com/oauth2/authorize?client_id=${client.user.id}&permissions=8&scope=applications.commands%20bot` })
-        .setColor(message.guild.members.me.displayHexColor !== '#000000' ? message.guild.members.me.displayHexColor : client.config.embedColor)
+        .setColor('#FFFFFF')
         .setDescription(`${content}`)
         .setTimestamp()
       channel.send({ embeds: [embed] })

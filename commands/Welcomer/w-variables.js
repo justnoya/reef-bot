@@ -22,7 +22,7 @@ module.exports = {
 • [2;34m<<user.mention>>[0m - User Mention
 \`\`\``)
 .setFooter({text: `Tip: Use ${prefix}w-message to setup a custom welcome message.`})
-.setColor(message.guild.members.me.displayHexColor !== '#000000' ? message.guild.members.me.displayHexColor : client.config.embedColor)
+.setColor('#FFFFFF')
 
 
 message.reply({embeds:[ems]})
