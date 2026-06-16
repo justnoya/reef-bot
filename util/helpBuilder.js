@@ -17,6 +17,7 @@ const CATEGORY_MAP = {
   vmod:        { emoji: '<:50:1056096392860422236>',       label: 'Voice Moderation' },
   customroles: { emoji: '<:52:1056096390079598673>',       label: 'Custom Roles'     },
   economy:     { emoji: '<a:bitcoin:1055862360713220237>', label: 'Economy'          },
+  music:       { emoji: '🎵',                              label: 'Music'            },
 };
 
 const PER_PAGE = 8;
@@ -89,6 +90,7 @@ function buildMainContainer(client, prefix, accent, inviteURL, supportURL) {
     { label: ' Voice Moderation', emoji: '<:50:1056096392860422236>',       value: 'vmod'        },
     { label: ' Custom Roles',     emoji: '<:52:1056096390079598673>',       value: 'customroles' },
     { label: ' Economy',          emoji: '<a:bitcoin:1055862360713220237>', value: 'economy'     },
+    { label: ' Music',            emoji: '🎵',                              value: 'music'       },
   ];
 
   const selectRow = new ActionRow().addComponents(

@@ -1,7 +1,6 @@
 const { EmbedBuilder, ButtonBuilder, ActionRowBuilder, PermissionsBitField } = require('discord.js');
 const { buildCategoryContainer, buildMainContainer, IS_COMPONENTS_V2 } = require('../util/helpBuilder');
-const { buildPlayerContainer, buildSearchResultsContainer } = require('../util/musicPlayerUI');
-const musicManager = require('../util/MusicManager');
+const { buildPlayerContainer } = require('../util/musicPlayerUI');
 
 const User  = require("../Models/User");
 const { slash } = require(`${process.cwd()}/util/onCoolDown.js`);
@@ -27,60 +26,15 @@ module.exports.run = async (client, interaction) => {
   if (interaction.isStringSelectMenu?.() || interaction.isSelectMenu?.()) {
     const customId = interaction.customId;
 
-    // ── Music: search result picker ─────────────────────────────────────────
-    if (customId === 'music_select_result') {
-      const cache = client._musicSearchCache?.get(interaction.user.id);
-      if (!cache) {
-        return interaction.reply({ content: '❌ Search session expired. Run `/play` again.', ephemeral: true });
-      }
-
-      const idx = parseInt(interaction.values[0].replace('result_', ''), 10);
-      const track = cache.results[idx];
-      if (!track) return interaction.reply({ content: '❌ Invalid selection.', ephemeral: true });
-
-      const voiceChannel = interaction.member?.voice?.channel;
-      if (!voiceChannel) {
-        return interaction.reply({ content: '❌ Join a voice channel first!', ephemeral: true });
-      }
-
-      await interaction.deferUpdate();
-
-      try {
-        let q = musicManager.getQueue(interaction.guild.id);
-        if (!q || !q.connection) {
-          q = await musicManager.join(voiceChannel, interaction.guild.voiceAdapterCreator, interaction.guild.id);
-        }
-
-        q.tracks = [track];
-        q.currentIndex = 0;
-
-        if (q.player) q.player.stop(true);
-
-        await musicManager.playTrack(q, track, async () => {});
-
-        const playerContainer = buildPlayerContainer(track, accentInt, false);
-        await interaction.editReply({
-          flags: require('../util/musicPlayerUI').IS_COMPONENTS_V2,
-          components: [playerContainer],
-        }).catch(() => {});
-
-        client._musicSearchCache?.delete(interaction.user.id);
-      } catch (err) {
-        console.error('[Music select]', err);
-        interaction.followUp({ content: `❌ Error: ${err.message}`, ephemeral: true }).catch(() => {});
-      }
-      return;
-    }
-
     // ── Music: player options select ─────────────────────────────────────────
     if (customId === 'music_options') {
       const value = interaction.values[0];
-      const q = musicManager.getQueue(interaction.guild.id);
+      const q = client.distube.getQueue(interaction.guild.id);
 
       await interaction.deferUpdate();
 
       if (value === 'stop') {
-        musicManager.stop(interaction.guild.id);
+        await client.distube.stop(interaction.guild.id).catch(() => {});
         return interaction.editReply({ content: '⏹ Stopped and disconnected.', components: [], flags: 0 }).catch(() => {});
       }
 
@@ -89,29 +43,27 @@ module.exports.run = async (client, interaction) => {
       }
 
       let reply = '';
-      if (value === 'autoplay')       { q.autoplay   = !q.autoplay;   reply = `🔄 Autoplay **${q.autoplay ? 'ON' : 'OFF'}**`; }
-      if (value === 'loop_queue')     { q.loopQueue  = !q.loopQueue;  reply = `🔁 Loop Queue **${q.loopQueue ? 'ON' : 'OFF'}**`; }
-      if (value === 'loop_song')      { q.loopSong   = !q.loopSong;   reply = `🔂 Loop Song **${q.loopSong ? 'ON' : 'OFF'}**`; }
-      if (value === 'smart_shuffle')  { q.tracks.sort(() => Math.random() - 0.5); reply = '🔀 Queue shuffled!'; }
-      if (value === 'reconnect') {
-        const vc = interaction.member?.voice?.channel;
-        if (vc) { musicManager.reconnect(q, vc); reply = '🔌 Reconnected!'; }
-        else reply = '❌ Join a voice channel first.';
+      if (value === 'loop_queue') {
+        const mode = q.repeatMode === 2 ? 0 : 2;
+        client.distube.setRepeatMode(interaction.guild.id, mode);
+        reply = `🔁 Loop Queue **${mode === 2 ? 'ON' : 'OFF'}**`;
       }
-      if (value === 'radio')   { reply = '📻 Radio mode coming soon!'; }
-      if (value === 'lyrics')  { reply = '📜 Lyrics feature coming soon!'; }
-      if (value === 'add_songs') { reply = '➕ Use `/play <song>` to add more songs to the queue!'; }
-
-      if (reply) {
-        interaction.followUp({ content: reply, ephemeral: true }).catch(() => {});
+      if (value === 'loop_song') {
+        const mode = q.repeatMode === 1 ? 0 : 1;
+        client.distube.setRepeatMode(interaction.guild.id, mode);
+        reply = `🔂 Loop Song **${mode === 1 ? 'ON' : 'OFF'}**`;
       }
+      if (value === 'smart_shuffle') {
+        await client.distube.shuffle(interaction.guild.id).catch(() => {});
+        reply = '🔀 Queue shuffled!';
+      }
+      if (value === 'add_songs') { reply = `➕ Use \`${prefix}play <song>\` to add more songs to the queue!`; }
 
-      if (q?.current) {
-        const updatedContainer = buildPlayerContainer(q.current, accentInt, q.paused);
-        interaction.editReply({
-          flags: require('../util/musicPlayerUI').IS_COMPONENTS_V2,
-          components: [updatedContainer],
-        }).catch(() => {});
+      if (reply) interaction.followUp({ content: reply, ephemeral: true }).catch(() => {});
+
+      if (q?.songs?.length) {
+        const updatedContainer = buildPlayerContainer(q.songs[0], 0xFFFFFF, q.paused);
+        interaction.editReply({ flags: IS_COMPONENTS_V2, components: [updatedContainer] }).catch(() => {});
       }
       return;
     }
@@ -147,57 +99,46 @@ module.exports.run = async (client, interaction) => {
 
     // ── Music buttons ────────────────────────────────────────────────────────
     if (customId.startsWith('music_')) {
-      const q = musicManager.getQueue(interaction.guild.id);
+      const q = client.distube.getQueue(interaction.guild.id);
 
-      if (customId === 'music_playlists') {
-        return interaction.reply({ content: '🎵 Playlist feature coming soon!', ephemeral: true });
-      }
-      if (customId === 'music_browse') {
-        return interaction.reply({ content: '🔍 Browse feature coming soon!', ephemeral: true });
-      }
-      if (customId === 'music_settings') {
-        return interaction.reply({ content: '⚙️ Settings feature coming soon!', ephemeral: true });
-      }
-
-      if (!q || !q.current) {
+      if (!q || !q.songs?.length) {
         return interaction.reply({ content: '❌ Nothing is playing right now.', ephemeral: true });
       }
 
       await interaction.deferUpdate();
 
       if (customId === 'music_prev') {
-        const ok = musicManager.prev(interaction.guild.id);
-        if (!ok) {
-          interaction.followUp({ content: '⏮ No previous song in queue.', ephemeral: true }).catch(() => {});
+        try {
+          await client.distube.previous(interaction.guild.id);
+        } catch {
+          interaction.followUp({ content: '⏮ No previous song.', ephemeral: true }).catch(() => {});
         }
+        return;
       }
 
       if (customId === 'music_pause') {
-        const nowPaused = musicManager.pause(interaction.guild.id);
-        const updatedContainer = buildPlayerContainer(q.current, accentInt, nowPaused);
-        return interaction.editReply({
-          flags: require('../util/musicPlayerUI').IS_COMPONENTS_V2,
-          components: [updatedContainer],
-        }).catch(() => {});
+        const willBePaused = !q.paused;
+        if (q.paused) client.distube.resume(interaction.guild.id);
+        else          client.distube.pause(interaction.guild.id);
+        const updatedContainer = buildPlayerContainer(q.songs[0], 0xFFFFFF, willBePaused);
+        return interaction.editReply({ flags: IS_COMPONENTS_V2, components: [updatedContainer] }).catch(() => {});
       }
 
       if (customId === 'music_skip') {
-        musicManager.skip(interaction.guild.id);
-        interaction.followUp({ content: '⏭ Skipped!', ephemeral: true }).catch(() => {});
+        try {
+          await client.distube.skip(interaction.guild.id);
+          interaction.followUp({ content: '⏭ Skipped!', ephemeral: true }).catch(() => {});
+        } catch {
+          interaction.followUp({ content: '❌ No next song in queue.', ephemeral: true }).catch(() => {});
+        }
+        return;
       }
 
       if (customId === 'music_stop') {
-        musicManager.stop(interaction.guild.id);
+        await client.distube.stop(interaction.guild.id).catch(() => {});
         return interaction.editReply({ content: '⏹ Stopped and disconnected.', components: [], flags: 0 }).catch(() => {});
       }
 
-      if (q?.current && customId !== 'music_stop') {
-        const updatedContainer = buildPlayerContainer(q.current, accentInt, q.paused);
-        interaction.editReply({
-          flags: require('../util/musicPlayerUI').IS_COMPONENTS_V2,
-          components: [updatedContainer],
-        }).catch(() => {});
-      }
       return;
     }
 

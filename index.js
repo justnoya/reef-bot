@@ -54,6 +54,9 @@ client.userSettings = new discord.Collection();
 client.fuLoops = new Map();
 client.vcLocks = new Map();
 
+const { setupDisTube } = require('./util/disTubeSetup');
+client.distube = setupDisTube(client);
+
 initDB().then(() => {
   client.logger.log('PostgreSQL connected and tables ready');
 }).catch(err => {

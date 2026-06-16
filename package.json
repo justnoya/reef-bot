@@ -28,6 +28,7 @@
     "discord-api-types": "^0.37.0",
     "discord-giveaways": "^6.0.1",
     "discord.js": "^14.18.0",
+    "distube": "^4.2.2",
     "dotenv": "^16.0.1",
     "moment": "^2.29.3",
     "ms": "^2.1.3",
