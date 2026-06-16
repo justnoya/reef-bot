@@ -172,10 +172,11 @@ module.exports.run = async (client, interaction) => {
 
     // ── Cybork Turbo gift: Claim ──────────────────────────────────────────────
     if (customId === 'cybork_turbo_claim') {
-      const { buildGiftCard, IS_COMPONENTS_V2: CV2 } = require('../commands/Setup/setup');
-      const congratsContainer = buildGiftCard(client, interaction.guild, true, interaction.user.id);
+      const { buildGiftCard, buildGiftFiles, IS_COMPONENTS_V2: CV2 } = require('../commands/Setup/setup');
+      const claimed = buildGiftCard(null, true, interaction.user.id);
       return interaction.update({
-        components: [congratsContainer.toJSON()],
+        components: [claimed.toJSON()],
+        files: buildGiftFiles(),
         flags: CV2,
       }).catch(() => {});
     }

@@ -1,62 +1,56 @@
+const path = require('path');
 const {
   Container, TextDisplay, Separator,
-  MediaGallery, MediaGalleryItem,
+  Section, Thumbnail,
   ActionRow, Button, IS_COMPONENTS_V2,
 } = require('../../V2components');
 
-function buildGiftCard(client, guild, claimed = false, claimedBy = null) {
-  const botAvatar = client.user.displayAvatarURL({ size: 1024, extension: 'png' });
-  const accent    = claimed ? '#57F287' : '#FFFFFF';
+const TURBO_IMG_PATH = path.join(__dirname, '../../assets/cybork_turbo.png');
+const TURBO_IMG_REF  = 'attachment://cybork_turbo.png';
 
-  const heroImage = new MediaGallery().addItems(
-    new MediaGalleryItem().setURL(botAvatar).setDescription('Cybork Turbo Gift')
-  );
+function buildGiftFiles() {
+  return [{ attachment: TURBO_IMG_PATH, name: 'cybork_turbo.png' }];
+}
 
+function buildGiftCard(gifterName, claimed = false, claimedBy = null) {
   const claimRow = new ActionRow().addComponents(
     claimed
       ? new Button()
           .setCustomId('cybork_turbo_noop')
-          .setLabel('✓  Claimed')
+          .setLabel('Accepted')
           .setStyle('Secondary')
           .setDisabled(true)
       : new Button()
           .setCustomId('cybork_turbo_claim')
-          .setLabel('🎁  Claim')
-          .setStyle('Success')
+          .setLabel('Accept')
+          .setStyle('Primary')
   );
 
   if (claimed) {
     return new Container()
-      .setAccentColor(accent)
+      .setAccentColor('#FFFFFF')
       .addComponents(
-        heroImage,
-        new Separator().setSpacing('Small'),
-        new TextDisplay('🎉  **Congratulations!**'),
-        new TextDisplay('## <:turbo:1516337651417092177>  Cybork Turbo'),
-        new TextDisplay(
-          `You have successfully claimed your **Cybork Turbo** gift!\n\n` +
-          (claimedBy ? `> Claimed by <@${claimedBy}>` : '')
-        ),
-        new Separator().setDivider(true).setSpacing('Small'),
+        new Section()
+          .addComponents(
+            new TextDisplay(`**You've claimed a subscription!**`),
+            new TextDisplay(`You've redeemed **Cybork Turbo** for **1 month!**`),
+            new TextDisplay(`-# Claimed by <@${claimedBy}>`)
+          )
+          .setAccessory(new Thumbnail().setURL(TURBO_IMG_REF)),
         claimRow
       );
   }
 
   return new Container()
-    .setAccentColor(accent)
+    .setAccentColor('#FFFFFF')
     .addComponents(
-      heroImage,
-      new Separator().setSpacing('Small'),
-      new TextDisplay('✨  **A WILD GIFT APPEARS!**'),
-      new TextDisplay('## <:turbo:1516337651417092177>  Cybork Turbo'),
-      new TextDisplay(
-        `**${client.user.username}** is gifting you a premium subscription!\n\n` +
-        `> **Server:** ${guild.name}\n` +
-        `> **Server ID:** \`${guild.id}\`\n` +
-        `> **Owner ID:** \`${guild.ownerId}\`\n` +
-        `> **Members:** \`${guild.memberCount}\``
-      ),
-      new Separator().setDivider(true).setSpacing('Small'),
+      new Section()
+        .addComponents(
+          new TextDisplay(`**You've been gifted a subscription!**`),
+          new TextDisplay(`**${gifterName}** has gifted you **Cybork Turbo** for **1 month!**`),
+          new TextDisplay(`-# Expires in 47 hours`)
+        )
+        .setAccessory(new Thumbnail().setURL(TURBO_IMG_REF)),
       claimRow
     );
 }
@@ -72,12 +66,15 @@ module.exports = {
   description: 'Sends a Cybork Turbo gift card for this server',
 
   run: async (client, message) => {
-    const container = buildGiftCard(client, message.guild, false);
+    const gifterName = message.member?.displayName || message.author.username;
+    const container  = buildGiftCard(gifterName, false);
     message.channel.send({
       components: [container.toJSON()],
+      files: buildGiftFiles(),
       flags: IS_COMPONENTS_V2,
     });
   },
 
   buildGiftCard,
+  buildGiftFiles,
 };
