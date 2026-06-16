@@ -8,16 +8,18 @@ const {
 } = require('../V2components');
 
 const CATEGORY_MAP = {
-  mod:         { emoji: '<:40:1052589138819436624>',       label: 'Moderation'       },
-  automod:     { emoji: '<:4_:1052589026294632448>',       label: 'Automod'          },
-  utility:     { emoji: '<:3_:1052589023794823249>',       label: 'Utility'          },
-  settings:    { emoji: '<:10:1052589041717092412>',       label: 'Settings'         },
-  info:        { emoji: '<:27:1052589100458315776>',       label: 'Information'      },
-  welcome:     { emoji: '<a:welcome:1054639371657162812>', label: 'Welcomer'         },
-  vmod:        { emoji: '<:50:1056096392860422236>',       label: 'Voice Moderation' },
-  customroles: { emoji: '<:52:1056096390079598673>',       label: 'Custom Roles'     },
-  economy:     { emoji: '<a:bitcoin:1055862360713220237>', label: 'Economy'          },
-  music:       { emoji: '🎵',                              label: 'Music'            },
+  setup:       { emoji: '<:setup:1516337375670698014>',       label: 'Setup'            },
+  cybork:      { emoji: '<:bot:1429372284950282240>',         label: 'Cybork'           },
+  mod:         { emoji: '<:moderation:1516337259157131365>',  label: 'Moderation'       },
+  automod:     { emoji: '<:4_:1052589026294632448>',          label: 'Automod'          },
+  utility:     { emoji: '<:utility:1516337285925179422>',     label: 'Utility'          },
+  settings:    { emoji: '<:10:1052589041717092412>',          label: 'Settings'         },
+  info:        { emoji: '<:27:1052589100458315776>',          label: 'Information'      },
+  welcome:     { emoji: '<:welcome:1516337153255276584>',     label: 'Welcomer'         },
+  vmod:        { emoji: '<:50:1056096392860422236>',          label: 'Voice Moderation' },
+  customroles: { emoji: '<:52:1056096390079598673>',          label: 'Custom Roles'     },
+  economy:     { emoji: '<a:bitcoin:1055862360713220237>',    label: 'Economy'          },
+  music:       { emoji: '<:music:1516337189880070144>',       label: 'Music'            },
 };
 
 const PER_PAGE = 8;
@@ -62,7 +64,7 @@ function buildCategoryContainer(client, category, page, prefix, accent) {
   const container = new Container()
     .setAccentColor(accent)
     .addComponents(
-      new TextDisplay(`## ${info.label} Commands`),
+      new TextDisplay(`## ${info.emoji} ${info.label} Commands`),
       new Separator().setDivider(true).setSpacing('Small'),
       new TextDisplay(`\`(Page ${safePage + 1}/${totalPages})\``),
       new Separator().setSpacing('Small'),
@@ -80,17 +82,19 @@ function buildCategoryContainer(client, category, page, prefix, accent) {
 
 function buildMainContainer(client, prefix, accent, inviteURL, supportURL) {
   const MODULES = [
-    { label: ' Home',             emoji: '<:46:1052589156787814481>',       value: 'home'        },
-    { label: ' Moderation',       emoji: '<:40:1052589138819436624>',       value: 'mod'         },
-    { label: ' Automod',          emoji: '<:4_:1052589026294632448>',       value: 'automod'     },
-    { label: ' Utility',          emoji: '<:3_:1052589023794823249>',       value: 'utility'     },
-    { label: ' Settings',         emoji: '<:10:1052589041717092412>',       value: 'settings'    },
-    { label: ' Information',      emoji: '<:27:1052589100458315776>',       value: 'info'        },
-    { label: ' Welcomer',         emoji: '<a:welcome:1054639371657162812>', value: 'welcome'     },
-    { label: ' Voice Moderation', emoji: '<:50:1056096392860422236>',       value: 'vmod'        },
-    { label: ' Custom Roles',     emoji: '<:52:1056096390079598673>',       value: 'customroles' },
-    { label: ' Economy',          emoji: '<a:bitcoin:1055862360713220237>', value: 'economy'     },
-    { label: ' Music',            emoji: '🎵',                              value: 'music'       },
+    { label: ' Setup',            emoji: '<:setup:1516337375670698014>',      value: 'setup'       },
+    { label: ' Home',             emoji: '<:46:1052589156787814481>',         value: 'home'        },
+    { label: ' Moderation',       emoji: '<:moderation:1516337259157131365>', value: 'mod'         },
+    { label: ' Automod',          emoji: '<:4_:1052589026294632448>',         value: 'automod'     },
+    { label: ' Utility',          emoji: '<:utility:1516337285925179422>',    value: 'utility'     },
+    { label: ' Settings',         emoji: '<:10:1052589041717092412>',         value: 'settings'    },
+    { label: ' Information',      emoji: '<:27:1052589100458315776>',         value: 'info'        },
+    { label: ' Welcomer',         emoji: '<:welcome:1516337153255276584>',    value: 'welcome'     },
+    { label: ' Voice Moderation', emoji: '<:50:1056096392860422236>',         value: 'vmod'        },
+    { label: ' Custom Roles',     emoji: '<:52:1056096390079598673>',         value: 'customroles' },
+    { label: ' Economy',          emoji: '<a:bitcoin:1055862360713220237>',   value: 'economy'     },
+    { label: ' Music',            emoji: '<:music:1516337189880070144>',      value: 'music'       },
+    { label: ' Cybork',           emoji: '<:bot:1429372284950282240>',        value: 'cybork'      },
   ];
 
   const selectRow = new ActionRow().addComponents(
@@ -115,7 +119,7 @@ function buildMainContainer(client, prefix, accent, inviteURL, supportURL) {
       new TextDisplay(
         `**Command Information**\n` +
         `Select a category from the menu below to view available commands.\n\n` +
-        `Use \`${prefix}exp <command>\` to get detailed command information and examples.`
+        `Use \`${prefix}help <command>\` to get detailed command information.`
       ),
       new Separator().setDivider(true).setSpacing('Small'),
       new TextDisplay(
