@@ -141,10 +141,36 @@ var m = "";
             }
         
         if (message.author.bot || !message.guild) return;
-        
-        
-        
-        
+
+        // AFK — clear if the AFK user sends a message
+        const afkKey = `afk_${message.author.id}`;
+        const afkData = await client.db.get(afkKey);
+        if (afkData) {
+          await client.db.delete(afkKey);
+          const { Container, TextDisplay, IS_COMPONENTS_V2 } = require('../V2components');
+          const afkBack = new Container().setAccentColor('#FFFFFF')
+            .addComponents(new TextDisplay(`<:success:1425509054343675964> Welcome back <@${message.author.id}>! Your AFK has been removed.`));
+          message.channel.send({ components: [afkBack.toJSON()], flags: IS_COMPONENTS_V2 }).then(m => setTimeout(() => m.delete().catch(() => {}), 6000)).catch(() => {});
+        }
+
+        // AFK — notify if a mentioned user is AFK
+        if (message.mentions.users.size) {
+          const { Container, TextDisplay, Separator, IS_COMPONENTS_V2 } = require('../V2components');
+          for (const [, user] of message.mentions.users) {
+            if (user.id === message.author.id) continue;
+            const mAfk = await client.db.get(`afk_${user.id}`);
+            if (mAfk) {
+              const since = `<t:${Math.round(mAfk.since / 1000)}:R>`;
+              const notif = new Container().setAccentColor('#FFFFFF').addComponents(
+                new TextDisplay(`💤 **${user.username}** is AFK ${since}`),
+                new Separator().setSpacing('Small'),
+                new TextDisplay(`➜ **Reason:** ${mAfk.reason}`)
+              );
+              message.channel.send({ components: [notif.toJSON()], flags: IS_COMPONENTS_V2 }).then(m => setTimeout(() => m.delete().catch(() => {}), 8000)).catch(() => {});
+            }
+          }
+        }
+
  if (!message.member) message.guild.fetchMembers(message);
 
  let datab = (client.noprefix || []).filter(x => x && x.trim() !== '');
