@@ -33,8 +33,8 @@ const CONFIG = {
   /** Optional env vars — warns if absent but does not block startup */
   optionalEnvVars: ['DATABASE_URL', 'TOPGG_API'],
 
-  /** Minimum Node.js major version */
-  minNodeMajor: 16,
+  /** Minimum Node.js version — driven by distube v4 (>=18.17.0) */
+  minNodeVersion: '18.17.0',
 
   /** Maximum consecutive restarts before permanent exit */
   maxRestarts: 10,
@@ -93,15 +93,23 @@ function backoffDelay() {
 // ─── Pre-flight checks ────────────────────────────────────────────────────────
 
 function checkNodeVersion() {
-  const major = parseInt(process.versions.node.split('.')[0], 10);
-  if (major < CONFIG.minNodeMajor) {
+  const parse  = v => v.split('.').map(Number);
+  const [cMaj, cMin, cPat] = parse(process.versions.node);
+  const [rMaj, rMin, rPat] = parse(CONFIG.minNodeVersion);
+
+  const tooOld =
+    cMaj < rMaj ||
+    (cMaj === rMaj && cMin < rMin) ||
+    (cMaj === rMaj && cMin === rMin && cPat < rPat);
+
+  if (tooOld) {
     log(LEVELS.ERROR,
       `Node.js v${process.versions.node} is too old.`,
-      `Required: v${CONFIG.minNodeMajor}+. Please upgrade.`
+      `Required: v${CONFIG.minNodeVersion}+ (strictest dep: distube v4). Please upgrade.`
     );
     process.exit(1);
   }
-  log(LEVELS.BOOT, `Node.js ${process.versions.node} — OK`);
+  log(LEVELS.BOOT, `Node.js ${process.versions.node} ≥ ${CONFIG.minNodeVersion} — OK`);
 }
 
 function validateEnv() {
