@@ -1,3 +1,5 @@
+'use strict';
+
 module.exports = {
   name: 'stop',
   description: 'Stop music and disconnect from voice channel',
@@ -6,10 +8,10 @@ module.exports = {
   cooldown: 2,
 
   run: async (client, message) => {
-    const queue = client.distube.getQueue(message.guild.id);
-    if (!queue) return message.reply({ content: '❌ Nothing is playing right now!' });
+    const player = client.lavalink?.getPlayer(message.guild.id);
+    if (!player) return message.reply({ content: '❌ Nothing is playing right now!' });
 
-    await client.distube.stop(message.guild.id);
+    await player.stopPlaying(true, true);
     message.react('⏹').catch(() => {});
   },
 };

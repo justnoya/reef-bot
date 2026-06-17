@@ -1,5 +1,6 @@
 const { ActivityType } = require("discord.js");
 
+module.exports.event = 'clientReady';
 module.exports.run = async (client) => {
   client.logger.banner();
   client.logger.log(`${client.user.tag} online · ${client.guilds.cache.size} servers · ${client.ws.ping}ms`, "ready");

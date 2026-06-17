@@ -41,7 +41,22 @@ const TOPGG_API     = process.env.TOPGG_API     || null;
 const client = new discord.Client({
   restWsBridgetimeout: 100,
   failIfNotExists: false,
-  makeCache: discord.Options.cacheEverything(),
+  makeCache: discord.Options.cacheWithLimits({
+    MessageManager: 50,
+    GuildMemberManager: 200,
+    UserManager: 200,
+    VoiceStateManager: 100,
+    PresenceManager: 0,
+    GuildBanManager: 0,
+    GuildInviteManager: 0,
+    GuildScheduledEventManager: 0,
+    GuildStickerManager: 0,
+    ReactionManager: 0,
+    ReactionUserManager: 0,
+    StageInstanceManager: 0,
+    ThreadManager: 0,
+    ThreadMemberManager: 0,
+  }),
   allowedMentions: {
     parse: ["roles", "users", "everyone"],
     repliedUser: false,
@@ -82,8 +97,8 @@ client.fuLoops = new Map();
 client.vcLocks = new Map();
 client.snipes  = new Map();
 
-const { setupDisTube } = require('./util/disTubeSetup');
-client.distube = setupDisTube(client);
+const { setupLavalink } = require('./util/lavalinkSetup');
+client.lavalink = null;
 
 initDB().then(() => {
   client.logger.log('PostgreSQL connected and tables ready');
@@ -95,6 +110,18 @@ if (!DISCORD_TOKEN) {
   client.logger.log('DISCORD_TOKEN is not set — cannot login.', 'error');
   process.exit(1);
 }
+
+client.once('clientReady', async (c) => {
+  const { manager } = setupLavalink(c);
+  client.lavalink = manager;
+  try {
+    await manager.init({ id: c.user.id, username: c.user.username });
+  } catch (e) {
+    client.logger.log(`Lavalink init failed: ${e.message}`, 'error');
+  }
+});
+
+client.on('raw', (d) => { try { client.lavalink?.sendRawData(d); } catch {} });
 
 client.login(DISCORD_TOKEN).catch(e => client.logger.log(`Login error: ${e.message}`, 'error'));
 

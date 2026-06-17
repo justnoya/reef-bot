@@ -1,3 +1,5 @@
+'use strict';
+
 const { buildPlayerContainer, IS_COMPONENTS_V2 } = require('../../util/musicPlayerUI');
 
 module.exports = {
@@ -8,12 +10,11 @@ module.exports = {
   cooldown: 3,
 
   run: async (client, message) => {
-    const queue = client.distube.getQueue(message.guild.id);
-    if (!queue || !queue.songs.length) {
+    const player = client.lavalink?.getPlayer(message.guild.id);
+    if (!player?.queue?.current)
       return message.reply({ content: '❌ Nothing is playing right now!' });
-    }
 
-    const container = buildPlayerContainer(queue.songs[0], 0xFFFFFF, queue.paused);
+    const container = buildPlayerContainer(player.queue.current, 0xFFFFFF, player.paused);
     message.reply({ flags: IS_COMPONENTS_V2, components: [container] });
   },
 };

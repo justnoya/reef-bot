@@ -27,7 +27,7 @@ module.exports = (client) => {
     
 
 
-client.on("ready",async ()=> {
+client.once("clientReady", async () => {
 
 
 

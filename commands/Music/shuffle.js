@@ -1,3 +1,5 @@
+'use strict';
+
 module.exports = {
   name: 'shuffle',
   description: 'Shuffle the music queue',
@@ -6,12 +8,11 @@ module.exports = {
   cooldown: 3,
 
   run: async (client, message) => {
-    const queue = client.distube.getQueue(message.guild.id);
-    if (!queue || queue.songs.length < 2) {
-      return message.reply({ content: '❌ Need at least 2 songs in the queue to shuffle!' });
-    }
+    const player = client.lavalink?.getPlayer(message.guild.id);
+    if (!player || !player.queue.tracks.length)
+      return message.reply({ content: '❌ Need songs in the queue to shuffle!' });
 
-    await client.distube.shuffle(message.guild.id);
+    await player.queue.utils.shuffle();
     message.react('🔀').catch(() => {});
   },
 };

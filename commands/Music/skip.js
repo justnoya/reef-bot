@@ -1,3 +1,5 @@
+'use strict';
+
 module.exports = {
   name: 'skip',
   description: 'Skip the current song',
@@ -6,14 +8,14 @@ module.exports = {
   cooldown: 2,
 
   run: async (client, message) => {
-    const queue = client.distube.getQueue(message.guild.id);
-    if (!queue) return message.reply({ content: '❌ Nothing is playing right now!' });
+    const player = client.lavalink?.getPlayer(message.guild.id);
+    if (!player?.playing) return message.reply({ content: '❌ Nothing is playing right now!' });
 
     try {
-      await client.distube.skip(message.guild.id);
+      await player.skip();
       message.react('⏭').catch(() => {});
-    } catch (err) {
-      message.reply({ content: `❌ No next song in queue.` });
+    } catch {
+      message.reply({ content: '❌ No next song in queue.' });
     }
   },
 };

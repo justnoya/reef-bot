@@ -1,4 +1,7 @@
+'use strict';
+
 const { Container, TextDisplay, Separator, IS_COMPONENTS_V2 } = require('../../V2components');
+const { formatMs } = require('../../util/musicPlayerUI');
 
 module.exports = {
   name: 'queue',
@@ -8,25 +11,24 @@ module.exports = {
   cooldown: 3,
 
   run: async (client, message) => {
-    const queue = client.distube.getQueue(message.guild.id);
-    if (!queue || !queue.songs.length) {
+    const player = client.lavalink?.getPlayer(message.guild.id);
+    if (!player?.queue?.current)
       return message.reply({ content: '❌ The queue is empty!' });
-    }
 
-    const current = queue.songs[0];
-    const upcoming = queue.songs.slice(1, 11);
+    const current  = player.queue.current;
+    const upcoming = player.queue.tracks.slice(0, 10);
 
-    const currentLine = `**Now Playing:**\n🎵 \`${current.name}\` · \`${current.formattedDuration || current.duration || '?'}\``;
+    const currentLine = `**Now Playing:**\n🎵 \`${current.info.title}\` · \`${formatMs(current.info.duration)}\``;
 
     const upcomingLines = upcoming.length
-      ? upcoming.map((s, i) =>
-          `\`${String(i + 1).padStart(2, '0')}\` **${s.name}** · \`${s.formattedDuration || s.duration || '?'}\``
+      ? upcoming.map((t, i) =>
+          `\`${String(i + 1).padStart(2, '0')}\` **${t.info.title}** · \`${formatMs(t.info.duration)}\``
         ).join('\n')
       : '*No more songs in queue.*';
 
-    const total   = queue.songs.length;
-    const loopMap = { 0: 'Off', 1: '🔂 Song', 2: '🔁 Queue' };
-    const footer  = `**${total}** song${total !== 1 ? 's' : ''} in queue · Loop: **${loopMap[queue.repeatMode] || 'Off'}** · Volume: **${queue.volume}%**`;
+    const total   = player.queue.tracks.length + 1;
+    const loopMap = { off: '🚫 Off', track: '🔂 Song', queue: '🔁 Queue' };
+    const footer  = `**${total}** song${total !== 1 ? 's' : ''} in queue · Loop: **${loopMap[player.repeatMode] || 'Off'}** · Volume: **${player.volume}%**`;
 
     const container = new Container()
       .setAccentColor(0xFFFFFF)

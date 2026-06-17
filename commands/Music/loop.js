@@ -1,3 +1,5 @@
+'use strict';
+
 const { Container, TextDisplay, Separator, IS_COMPONENTS_V2 } = require('../../V2components');
 
 module.exports = {
@@ -8,21 +10,23 @@ module.exports = {
   cooldown: 2,
 
   run: async (client, message, args) => {
-    const queue = client.distube.getQueue(message.guild.id);
-    if (!queue) return message.reply({ content: '❌ Nothing is playing right now!' });
+    const player = client.lavalink?.getPlayer(message.guild.id);
+    if (!player) return message.reply({ content: '❌ Nothing is playing right now!' });
 
-    const modeMap = { off: 0, song: 1, queue: 2 };
+    const modes   = ['off', 'track', 'queue'];
+    const aliases = { song: 'track', queue: 'queue', off: 'off' };
+
     let mode;
-
-    if (args[0] && modeMap[args[0].toLowerCase()] !== undefined) {
-      mode = modeMap[args[0].toLowerCase()];
+    if (args[0] && aliases[args[0].toLowerCase()] !== undefined) {
+      mode = aliases[args[0].toLowerCase()];
     } else {
-      mode = (queue.repeatMode + 1) % 3;
+      const idx = modes.indexOf(player.repeatMode);
+      mode = modes[(idx + 1) % modes.length];
     }
 
-    client.distube.setRepeatMode(message.guild.id, mode);
+    await player.setRepeatMode(mode);
 
-    const labels = { 0: '🚫 Loop Off', 1: '🔂 Loop Song', 2: '🔁 Loop Queue' };
+    const labels = { off: '🚫 Loop Off', track: '🔂 Loop Song', queue: '🔁 Loop Queue' };
 
     const container = new Container()
       .setAccentColor(0xFFFFFF)

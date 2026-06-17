@@ -1,3 +1,5 @@
+'use strict';
+
 module.exports = {
   name: 'pause',
   description: 'Pause or resume the current song',
@@ -6,14 +8,15 @@ module.exports = {
   cooldown: 2,
 
   run: async (client, message) => {
-    const queue = client.distube.getQueue(message.guild.id);
-    if (!queue) return message.reply({ content: '❌ Nothing is playing right now!' });
+    const player = client.lavalink?.getPlayer(message.guild.id);
+    if (!player?.playing && !player?.paused)
+      return message.reply({ content: '❌ Nothing is playing right now!' });
 
-    if (queue.paused) {
-      client.distube.resume(message.guild.id);
+    if (player.paused) {
+      await player.resume();
       message.react('▶').catch(() => {});
     } else {
-      client.distube.pause(message.guild.id);
+      await player.pause();
       message.react('⏸').catch(() => {});
     }
   },
