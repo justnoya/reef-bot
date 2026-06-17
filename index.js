@@ -3,7 +3,31 @@ const { readdirSync } = require("fs");
 const { EmbedBuilder, WebhookClient, GatewayIntentBits } = require('discord.js');
 const { Webhooks: { bot_error, webhook_error } } = require('./config.json');
 
-require("dotenv").config();
+// ─── Environment loading ──────────────────────────────────────────────────────
+// Loads api.json then .env into process.env so every module in this process
+// has access to all variables. Neither source overrides system / panel vars.
+(function loadEnv() {
+  const fs   = require('fs');
+  const path = require('path');
+
+  // 1 — api.json (fill in anything not already set by the panel/system)
+  try {
+    const apiPath = path.join(__dirname, 'api.json');
+    if (fs.existsSync(apiPath)) {
+      const data = JSON.parse(fs.readFileSync(apiPath, 'utf8'));
+      for (const [k, v] of Object.entries(data)) {
+        if (typeof v === 'string' && v.trim() !== '' && !process.env[k]) {
+          process.env[k] = v;
+        }
+      }
+    }
+  } catch (_) {}
+
+  // 2 — .env (fill in anything still missing)
+  try {
+    require('dotenv').config({ path: path.join(__dirname, '.env'), override: false });
+  } catch (_) {}
+})();
 
 const { KVStore, initDB } = require('./util/db');
 
