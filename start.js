@@ -21,6 +21,15 @@ const { spawn }   = require('child_process');
 const path        = require('path');
 const os          = require('os');
 
+// Load .env FIRST — before any process.env access.
+// In Pterodactyl / Docker the vars come from the panel (no .env needed),
+// but locally or on a bare VPS this ensures the file is always picked up.
+try {
+  require('dotenv').config({ path: path.join(__dirname, '.env') });
+} catch (_) {
+  // dotenv not installed — env vars must come from the system / panel
+}
+
 // ─── Configuration ────────────────────────────────────────────────────────────
 
 const CONFIG = {
