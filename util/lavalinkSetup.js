@@ -38,7 +38,9 @@ function setupLavalink(client) {
     },
   });
 
-  manager.nodeManager.on('error', () => {});
+  manager.nodeManager.on('error', (err) => {
+    client.logger.log(`Lavalink connection failed (${host}:${port}): ${err?.message || err}`, 'warn');
+  });
 
   manager.on('nodeConnect', (node) => {
     client.logger.log(`Lavalink node [${node.id}] connected (${host}:${port})`, 'ready');
