@@ -38,20 +38,24 @@ function setupLavalink(client) {
     },
   });
 
-  manager.nodeManager.on('error', (err) => {
-    client.logger.log(`Lavalink connection failed (${host}:${port}): ${err?.message || err}`, 'warn');
+  manager.nodeManager.on('error', (node, err) => {
+    client.logger.log(`Lavalink [${node?.options?.id || 'main'}] node error: ${err?.message || err}`, 'warn');
   });
 
   manager.on('nodeConnect', (node) => {
-    client.logger.log(`Lavalink node [${node.id}] connected (${host}:${port})`, 'ready');
+    client.logger.log(`Lavalink node [${node.id}] connected — music ready!`, 'ready');
   });
 
   manager.on('nodeError', (node, err) => {
     client.logger.log(`Lavalink node [${node.id}] error: ${err?.message || err}`, 'warn');
   });
 
-  manager.on('nodeDisconnect', (node) => {
-    client.logger.log(`Lavalink node [${node.id}] disconnected — music unavailable until reconnect`, 'warn');
+  manager.on('nodeDisconnect', (node, reason) => {
+    client.logger.log(`Lavalink node [${node.id}] disconnected: ${reason?.reason || 'unknown'} — will retry`, 'warn');
+  });
+
+  manager.on('nodeReconnect', (node) => {
+    client.logger.log(`Lavalink node [${node.id}] reconnecting...`, 'warn');
   });
 
   manager.on('trackStart', async (player, track) => {

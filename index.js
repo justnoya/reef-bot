@@ -112,12 +112,14 @@ if (!DISCORD_TOKEN) {
 }
 
 client.once('clientReady', async (c) => {
+  client.logger.log(`Initialising Lavalink → ${process.env.LAVALINK_HOST}:${process.env.LAVALINK_PORT}`);
   const { manager } = setupLavalink(c);
   client.lavalink = manager;
   try {
     await manager.init({ id: c.user.id, username: c.user.username });
+    client.logger.log('Lavalink manager init complete — awaiting node handshake');
   } catch (e) {
-    client.logger.log(`Lavalink init failed: ${e.message}`, 'error');
+    client.logger.log(`Lavalink init error: ${e.message}`, 'error');
   }
 });
 
