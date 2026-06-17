@@ -88,12 +88,28 @@ function backoffDelay() {
 // ─── Pre-flight checks ────────────────────────────────────────────────────────
 
 function ensureModules() {
-  const marker = path.join(__dirname, 'node_modules', 'discord.js');
+  const marker   = path.join(__dirname, 'node_modules', 'discord.js');
+  const lockFile = path.join(__dirname, 'package-lock.json');
+
   if (!fs.existsSync(marker)) {
-    log(LEVELS.BOOT, 'node_modules missing or incomplete — running npm install...');
+    // Remove package-lock.json if it was generated on Replit — it contains
+    // hardcoded URLs pointing to package-firewall.replit.local which is only
+    // reachable inside Replit's network. Deleting it forces npm to resolve
+    // every package from the public registry instead.
+    if (fs.existsSync(lockFile)) {
+      try {
+        const lockContent = fs.readFileSync(lockFile, 'utf8');
+        if (lockContent.includes('package-firewall.replit.local')) {
+          fs.unlinkSync(lockFile);
+          log(LEVELS.BOOT, 'Removed Replit-internal package-lock.json — will resolve from public registry.');
+        }
+      } catch (_) {}
+    }
+
+    log(LEVELS.BOOT, 'node_modules missing — running npm install...');
     log(LEVELS.BOOT, 'This may take a minute on first start. Please wait...');
     try {
-      execSync('npm install --prefer-offline', {
+      execSync('npm install', {
         cwd:   __dirname,
         stdio: 'inherit',
       });
