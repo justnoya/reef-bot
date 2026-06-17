@@ -1,3 +1,7 @@
+if (!global.File) {
+  try { global.File = require('buffer').File; } catch (_) {}
+}
+
 const discord = require("discord.js");
 const { readdirSync } = require("fs");
 const { EmbedBuilder, WebhookClient, GatewayIntentBits } = require('discord.js');
