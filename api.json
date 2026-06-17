@@ -1,5 +1,10 @@
 {
   "DISCORD_TOKEN": "",
   "DATABASE_URL": "",
+  "PGHOST": "",
+  "PGPORT": "",
+  "PGUSER": "",
+  "PGPASSWORD": "",
+  "PGDATABASE": "",
   "TOPGG_API": ""
 }
