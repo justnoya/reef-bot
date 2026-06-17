@@ -28,3 +28,10 @@ outputType = "console"
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "node index.js"
+
+[userenv]
+
+[userenv.shared]
+LAVALINK_HOST = "goatpanel.duckdns.org"
+LAVALINK_PORT = "3001"
+LAVALINK_SECURE = "false"
