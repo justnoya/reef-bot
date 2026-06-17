@@ -94,7 +94,7 @@ if (!DISCORD_TOKEN) {
 
 client.login(DISCORD_TOKEN).catch(e => client.logger.log(`Login error: ${e.message}`, 'error'));
 
-client.on("message", async message => {
+client.on("messageCreate", async message => {
   try {
     const hasText  = Boolean(message.content);
     const hasImage = message.attachments.size !== 0;

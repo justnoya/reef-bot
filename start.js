@@ -88,39 +88,62 @@ function backoffDelay() {
 // ─── Pre-flight checks ────────────────────────────────────────────────────────
 
 function ensureModules() {
-  const marker   = path.join(__dirname, 'node_modules', 'discord.js');
+  const nmDir    = path.join(__dirname, 'node_modules');
   const lockFile = path.join(__dirname, 'package-lock.json');
 
-  if (!fs.existsSync(marker)) {
-    // Remove package-lock.json if it was generated on Replit — it contains
-    // hardcoded URLs pointing to package-firewall.replit.local which is only
-    // reachable inside Replit's network. Deleting it forces npm to resolve
-    // every package from the public registry instead.
-    if (fs.existsSync(lockFile)) {
-      try {
-        const lockContent = fs.readFileSync(lockFile, 'utf8');
-        if (lockContent.includes('package-firewall.replit.local')) {
-          fs.unlinkSync(lockFile);
-          log(LEVELS.BOOT, 'Removed Replit-internal package-lock.json — will resolve from public registry.');
-        }
-      } catch (_) {}
-    }
-
-    log(LEVELS.BOOT, 'node_modules missing — running npm install...');
-    log(LEVELS.BOOT, 'This may take a minute on first start. Please wait...');
+  // ── Step 1: Strip Replit-internal package-lock.json (always, unconditionally)
+  // package-lock.json generated on Replit embeds hardcoded URLs like
+  // "package-firewall.replit.local" that are unreachable outside Replit.
+  // We delete it every boot so npm always resolves from the public registry.
+  // On Replit itself this is a no-op: node_modules is intact so we never
+  // reach the npm install step below.
+  if (fs.existsSync(lockFile)) {
     try {
-      execSync('npm install', {
-        cwd:   __dirname,
-        stdio: 'inherit',
-      });
-      log(LEVELS.BOOT, 'npm install completed — continuing startup.');
-    } catch (err) {
-      log(LEVELS.ERROR, 'npm install failed. Check your network and package.json.');
-      log(LEVELS.ERROR, err.message);
-      process.exit(1);
+      const content = fs.readFileSync(lockFile, 'utf8');
+      if (content.includes('package-firewall.replit.local')) {
+        fs.unlinkSync(lockFile);
+        log(LEVELS.BOOT, 'Stripped Replit-internal package-lock.json — npm will use the public registry.');
+      }
+    } catch (_) {}
+  }
+
+  // ── Step 2: Verify discord.js is actually importable ─────────────────────
+  // A directory existence check is NOT reliable — a failed/partial npm install
+  // creates node_modules/discord.js/ before aborting, which makes the directory
+  // exist but the package be completely unusable. require.resolve() is the
+  // only reliable way to confirm the package can actually be loaded.
+  let needsInstall = false;
+  try {
+    require.resolve('discord.js', { paths: [__dirname] });
+  } catch (_) {
+    needsInstall = true;
+  }
+
+  if (!needsInstall) {
+    log(LEVELS.BOOT, 'node_modules OK');
+    return;
+  }
+
+  // ── Step 3: Wipe any partial node_modules before reinstalling ────────────
+  // A partial install leaves broken packages behind. Always start clean so
+  // npm does not try to reconcile broken state.
+  if (fs.existsSync(nmDir)) {
+    log(LEVELS.BOOT, 'Incomplete node_modules detected — removing for a clean install...');
+    try {
+      fs.rmSync(nmDir, { recursive: true, force: true });
+    } catch (e) {
+      log(LEVELS.WARN, `Could not remove node_modules: ${e.message}`);
     }
-  } else {
-    log(LEVELS.BOOT, 'node_modules present — OK');
+  }
+
+  // ── Step 4: Install from public registry ─────────────────────────────────
+  log(LEVELS.BOOT, 'Installing dependencies — this may take a few minutes on first start...');
+  try {
+    execSync('npm install', { cwd: __dirname, stdio: 'inherit' });
+    log(LEVELS.BOOT, 'npm install completed — continuing startup.');
+  } catch (_) {
+    log(LEVELS.ERROR, 'npm install failed. Check network connectivity and package.json, then restart.');
+    process.exit(1);
   }
 }
 
