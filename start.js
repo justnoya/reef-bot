@@ -20,14 +20,47 @@
 const { spawn }   = require('child_process');
 const path        = require('path');
 const os          = require('os');
+const fs          = require('fs');
 
-// Load .env FIRST — before any process.env access.
-// In Pterodactyl / Docker the vars come from the panel (no .env needed),
-// but locally or on a bare VPS this ensures the file is always picked up.
+// ─── Config source loading (runs before everything else) ──────────────────────
+// Priority (highest → lowest):
+//   1. System / panel environment variables  (Pterodactyl, Replit Secrets, Docker)
+//   2. api.json                              (explicit JSON config file)
+//   3. .env                                  (dotenv fallback)
+// A value already in process.env is NEVER overridden by a file source.
+
+const _configSources = [];
+
+// ── Source 2: api.json ────────────────────────────────────────────────────────
+const _apiJsonPath = path.join(__dirname, 'api.json');
+if (fs.existsSync(_apiJsonPath)) {
+  try {
+    const _apiData = JSON.parse(fs.readFileSync(_apiJsonPath, 'utf8'));
+    let _loaded = 0;
+    for (const [k, v] of Object.entries(_apiData)) {
+      if (typeof v === 'string' && v.trim() !== '' && !process.env[k]) {
+        process.env[k] = v;
+        _loaded++;
+      }
+    }
+    _configSources.push(`api.json (${_loaded} var${_loaded !== 1 ? 's' : ''})`);
+  } catch (err) {
+    _configSources.push(`api.json (parse error: ${err.message})`);
+  }
+}
+
+// ── Source 3: .env ────────────────────────────────────────────────────────────
 try {
-  require('dotenv').config({ path: path.join(__dirname, '.env') });
+  const _result = require('dotenv').config({
+    path:     path.join(__dirname, '.env'),
+    override: false,   // never stomp system vars or api.json values
+  });
+  if (!_result.error) {
+    const _count = Object.keys(_result.parsed || {}).length;
+    _configSources.push(`.env (${_count} var${_count !== 1 ? 's' : ''})`);
+  }
 } catch (_) {
-  // dotenv not installed — env vars must come from the system / panel
+  // dotenv not installed — that's fine; api.json or panel vars cover it
 }
 
 // ─── Configuration ────────────────────────────────────────────────────────────
@@ -125,7 +158,7 @@ function validateEnv() {
   const missing = CONFIG.requiredEnvVars.filter(k => !process.env[k]);
   if (missing.length > 0) {
     log(LEVELS.ERROR, `Missing required environment variables: ${missing.join(', ')}`);
-    log(LEVELS.ERROR, 'Set them in your panel\'s environment settings and restart.');
+    log(LEVELS.ERROR, 'Add them to api.json, a .env file, or your panel\'s environment settings.');
     process.exit(1);
   }
 
@@ -143,6 +176,7 @@ function printBanner() {
   log(LEVELS.BOOT, `  Script   : ${CONFIG.script}`);
   log(LEVELS.BOOT, `  Platform : ${os.type()} ${os.release()} (${os.arch()})`);
   log(LEVELS.BOOT, `  PID      : ${process.pid}`);
+  log(LEVELS.BOOT, `  Config   : ${_configSources.length ? _configSources.join(', ') : 'system env only'}`);
   log(LEVELS.BOOT, '─────────────────────────────────────────');
 }
 
