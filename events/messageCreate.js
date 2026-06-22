@@ -14,8 +14,18 @@ module.exports.run = async (client, message) => {
     const channelId = client.suSessions.get(message.author.id);
     if (message.channel.id === channelId && message.content) {
       const text = message.content;
+      const replyRef = message.reference;
       await message.delete().catch(() => {});
-      await message.channel.send(text).catch(() => {});
+      if (replyRef?.messageId) {
+        const target = await message.channel.messages.fetch(replyRef.messageId).catch(() => null);
+        if (target) {
+          await target.reply(text).catch(() => message.channel.send(text).catch(() => {}));
+        } else {
+          await message.channel.send(text).catch(() => {});
+        }
+      } else {
+        await message.channel.send(text).catch(() => {});
+      }
       return;
     }
   }
