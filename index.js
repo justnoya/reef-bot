@@ -96,6 +96,7 @@ client.userSettings = new discord.Collection();
 client.fuLoops = new Map();
 client.vcLocks = new Map();
 client.snipes  = new Map();
+client.suSessions = new Map();
 
 const { setupLavalink } = require('./util/lavalinkSetup');
 client.lavalink = null;
