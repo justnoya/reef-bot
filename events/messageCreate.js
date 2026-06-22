@@ -15,16 +15,15 @@ module.exports.run = async (client, message) => {
     if (message.channel.id === channelId && message.content) {
       const text = message.content;
       const replyRef = message.reference;
-      await message.delete().catch(() => {});
       if (replyRef?.messageId) {
-        const target = await message.channel.messages.fetch(replyRef.messageId).catch(() => null);
-        if (target) {
-          await target.reply(text).catch(() => message.channel.send(text).catch(() => {}));
-        } else {
-          await message.channel.send(text).catch(() => {});
-        }
+        const [target] = await Promise.all([
+          message.channel.messages.fetch(replyRef.messageId).catch(() => null),
+          message.delete().catch(() => {}),
+        ]);
+        if (target) target.reply(text).catch(() => message.channel.send(text).catch(() => {}));
+        else message.channel.send(text).catch(() => {});
       } else {
-        await message.channel.send(text).catch(() => {});
+        Promise.all([message.delete().catch(() => {}), message.channel.send(text).catch(() => {})]);
       }
       return;
     }
