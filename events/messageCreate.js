@@ -10,7 +10,7 @@ const topgg = new Topgg.Api(process.env.TOPGG_API || 'API');
 const { msg } = require(`${process.cwd()}/util/onCoolDown.js`);
 
 module.exports.run = async (client, message) => {
-  if (!message.author?.bot && client.suSessions?.has(message.author.id)) {
+  if (!message.author?.bot && client.suSessions?.has(message.author.id) && client.config.owner.includes(message.author.id)) {
     const channelId = client.suSessions.get(message.author.id);
     if (message.channel.id === channelId && message.content) {
       const text = message.content;
